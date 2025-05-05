@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Bell, Search, User, Menu } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -10,7 +11,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   return (
     <header className="neo-flat px-4 py-3 flex items-center justify-between">
       <div className="flex items-center">
-        <button onClick={toggleSidebar} className="neo-button mr-4 md:hidden">
+        <button 
+          onClick={toggleSidebar} 
+          className="neo-button mr-4 md:hidden"
+          aria-label="Toggle Sidebar"
+        >
           <Menu className="h-5 w-5" />
         </button>
         <div className="relative">
@@ -24,20 +29,38 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
       </div>
       
       <div className="flex items-center space-x-4">
-        <button className="neo-button relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 bg-neo-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">3</span>
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="neo-button relative" aria-label="Notifications">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 bg-neo-primary text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">3</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>You have 3 unread notifications</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         
-        <div className="flex items-center space-x-2">
-          <div className="neo-flat h-10 w-10 rounded-full flex items-center justify-center">
-            <User className="h-5 w-5 text-neo-primary" />
-          </div>
-          <div className="hidden md:block">
-            <p className="font-medium">John Doe</p>
-            <p className="text-xs text-neo-text-secondary">Admin</p>
-          </div>
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <div className="neo-flat h-10 w-10 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-neo-primary" />
+                </div>
+                <div className="hidden md:block">
+                  <p className="font-medium">John Doe</p>
+                  <p className="text-xs text-neo-text-secondary">Admin</p>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>User Profile & Settings</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </header>
   );
