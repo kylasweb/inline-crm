@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -217,6 +216,10 @@ const Tickets: React.FC = () => {
     }
     return true;
   });
+
+  const getVariantForSLA = (isBreach: boolean) => {
+    return isBreach ? "destructive" : "default";
+  }
   
   if (ticketsLoading || statsLoading) {
     return (
@@ -502,8 +505,7 @@ const Tickets: React.FC = () => {
                     <Progress 
                       value={client.count} 
                       max={Math.max(...stats.topClients.map(c => c.count))} 
-                      className="h-2" 
-                      indicatorClassName={index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'} 
+                      className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                     />
                   </div>
                 ))}
@@ -522,8 +524,7 @@ const Tickets: React.FC = () => {
                     <Progress 
                       value={category.count} 
                       max={Math.max(...stats.topCategories.map(c => c.count))} 
-                      className="h-2" 
-                      indicatorClassName={index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'} 
+                      className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                     />
                   </div>
                 ))}
@@ -714,7 +715,7 @@ const Tickets: React.FC = () => {
                     {selectedTicket.sla.breached ? (
                       <Badge variant="destructive">SLA Breached</Badge>
                     ) : (
-                      <Badge variant="success">Within SLA</Badge>
+                      <Badge variant="default">Within SLA</Badge>
                     )}
                   </div>
                 </div>
@@ -792,12 +793,3 @@ const Tickets: React.FC = () => {
               <Button className="neo-button">
                 Save Changes
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-};
-
-export default Tickets;

@@ -10,6 +10,7 @@ import LeadManagement from "./pages/LeadManagement";
 import Opportunities from "./pages/Opportunities";
 import Tickets from "./pages/Tickets"; // Add this import
 import NotFound from "./pages/NotFound";
+import ComingSoon from "./components/ComingSoon";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,7 +62,7 @@ const App = () => (
   </QueryClientProvider>
 );
 
-// Temporary component for modules that aren't implemented yet
+// Create a ComingSoon component since it's being used in App.tsx
 interface ComingSoonProps {
   name: string;
 }

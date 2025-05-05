@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { ArrowRight, BarChart as BarChartIcon, ChevronDown, Edit, Filter, Plus, RefreshCcw, Trash } from 'lucide-react';
+import { ArrowRight, BarChart as BarChartIcon, ChevronDown, Edit, Filter, Plus, RefreshCcw, Trash, Clock as ClockIcon } from 'lucide-react';
 import NeoCard from '@/components/ui/neo-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -74,6 +73,11 @@ interface OpportunityStats {
   monthlySales: { month: string; closed: number; target: number }[];
 }
 
+// Define props interface for Opportunities
+interface OpportunitiesProps {
+  initialTab?: string;
+}
+
 const stageOrder = ['Qualification', 'Solution Design', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
 
 const stageColorMap: Record<string, string> = {
@@ -85,7 +89,7 @@ const stageColorMap: Record<string, string> = {
   'Closed Lost': 'bg-red-500'
 };
 
-const Opportunities: React.FC = () => {
+const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
@@ -177,6 +181,11 @@ const Opportunities: React.FC = () => {
     }
   });
 
+  function getVariantForSuccess() {
+    // Return a valid Badge variant
+    return "default";
+  }
+
   if (opportunitiesLoading || statsLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh]">
@@ -264,7 +273,7 @@ const Opportunities: React.FC = () => {
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-sm text-neo-text-secondary">Avg Sales Cycle</h3>
             <span className="neo-flat rounded-md p-1">
-              <Clock className="h-4 w-4 text-neo-primary" />
+              <ClockIcon className="h-4 w-4 text-neo-primary" />
             </span>
           </div>
           <p className="text-2xl font-bold">{stats?.salesCycle || 0} days</p>
@@ -519,8 +528,7 @@ const Opportunities: React.FC = () => {
                     </div>
                     <Progress 
                       value={(stage.value / stats.totalValue) * 100} 
-                      className="h-2" 
-                      indicatorClassName={index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'} 
+                      className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                     />
                     <div className="flex justify-between text-xs text-neo-text-secondary">
                       <span>{stage.count} deals</span>
@@ -576,8 +584,7 @@ const Opportunities: React.FC = () => {
                   <Progress 
                     value={product.count} 
                     max={Math.max(...stats.topProducts.map(p => p.count))} 
-                    className="h-2" 
-                    indicatorClassName={index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'} 
+                    className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                   />
                   <div className="flex justify-between text-xs text-neo-text-secondary">
                     <span>{product.count} opportunities</span>
@@ -736,52 +743,4 @@ const Opportunities: React.FC = () => {
               
               <Separator className="my-4" />
               
-              <div className="mb-4">
-                <h3 className="font-medium mb-2">Products</h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedOpportunity.products.map((product, index) => (
-                    <Badge key={index} variant="outline">{product}</Badge>
-                  ))}
-                </div>
-                {selectedOpportunity.products.length === 0 && (
-                  <p className="text-sm text-neo-text-secondary">No products added</p>
-                )}
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="font-medium mb-2">Next Actions</h3>
-                {selectedOpportunity.nextAction ? (
-                  <div className="neo-flat p-3 rounded-lg">
-                    <p className="text-sm">{selectedOpportunity.nextAction}</p>
-                    {selectedOpportunity.nextActionDate && (
-                      <p className="text-xs text-neo-text-secondary mt-1">
-                        Due: {new Date(selectedOpportunity.nextActionDate).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-neo-text-secondary">No next actions defined</p>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsViewDialogOpen(false)}
-                className="neo-flat"
-              >
-                Close
-              </Button>
-              <Button className="neo-button">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-};
-
-export default Opportunities;
+              <
