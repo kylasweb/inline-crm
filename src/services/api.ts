@@ -1,6 +1,8 @@
 /**
  * Base API service for making HTTP requests
  */
+import { LeadStats } from './leadService';
+
 const API_BASE_URL = 'https://api.example.com'; // Replace with your API URL in production
 
 export interface ApiResponse<T> {
@@ -26,6 +28,11 @@ export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
         success: true,
         data: mockDashboardData(endpoint) as T
       };
+    } else if (endpoint.includes('/lead-config')) {
+      return {
+        success: true,
+        data: mockLeadConfigData(endpoint) as T
+      };
     }
     
     // Default response
@@ -45,6 +52,22 @@ export async function postData<T>(endpoint: string, data: unknown): Promise<ApiR
   try {
     // Simulating API delay
     await new Promise(resolve => setTimeout(resolve, 700));
+    
+    // Mock form validation
+    if (endpoint.includes('/validate')) {
+      return {
+        success: true,
+        data: mockValidateFormData(data) as T
+      };
+    }
+    
+    // Mock form submission
+    if (endpoint.includes('/submit')) {
+      return {
+        success: true,
+        data: mockSubmitForm(data) as T
+      };
+    }
     
     // Mock successful response
     return {
@@ -97,6 +120,7 @@ export async function deleteData(endpoint: string): Promise<ApiResponse<void>> {
   }
 }
 
+// Interfaces
 export interface Lead {
   id: string;
   name: string;
@@ -143,51 +167,48 @@ interface DashboardData {
   recentActivity: { id: number; type: string; action: string; subject: string; timestamp: string; user: string }[];
 }
 
-interface LeadStats {
-  totalLeads: number;
-  newLeadsToday: number;
-  leadsBySource: { source: string; count: number }[];
-  leadsByStatus: { status: string; count: number }[];
-  conversionRate: number;
-  averageResponseTime: number;
-}
-
 // Mock data generators
-function mockLeadData(endpoint: string): Lead[] | LeadStats {
+function mockLeadData(endpoint: string): Lead[] | LeadStats | number {
   const statuses = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation'];
   const sources = ['Website', 'Referral', 'LinkedIn', 'Cold Call', 'Trade Show', 'Email Campaign'];
   const companies = ['Acme Corp', 'Globex Inc', 'Initech', 'Umbrella Corp', 'Wayne Enterprises', 'Stark Industries'];
   
-  interface MockLeadStats {
+  interface LeadStats {
     totalLeads: number;
-    newLeadsToday: number;
+    newLeads: number;
+    qualifiedLeads: number;
+    conversionRate: number;
     leadsBySource: { source: string; count: number }[];
     leadsByStatus: { status: string; count: number }[];
-    conversionRate: number;
-    averageResponseTime: number;
+    leadTrend: { date: string; leads: number }[];
   }
 
-  if (endpoint.includes('/leads/stats')) {
-    const result: MockLeadStats = {
+  if (endpoint.includes('/score')) {
+    return Math.floor(Math.random() * 100);
+  }
+
+  if (endpoint.includes('/stats')) {
+    const result: LeadStats = {
       totalLeads: 156,
-      newLeadsToday: 12,
-      leadsBySource: [
-        { source: 'Website', count: 45 },
-        { source: 'Referral', count: 32 },
-        { source: 'LinkedIn', count: 28 },
-        { source: 'Cold Call', count: 15 },
-        { source: 'Trade Show', count: 21 },
-        { source: 'Email Campaign', count: 15 }
-      ],
-      leadsByStatus: [
-        { status: 'New', count: 35 },
-        { status: 'Contacted', count: 42 },
-        { status: 'Qualified', count: 38 },
-        { status: 'Proposal', count: 25 },
-        { status: 'Negotiation', count: 16 }
-      ],
-      conversionRate: 24, // percentage
-      averageResponseTime: 3.5, // hours
+      newLeads: 24,
+      qualifiedLeads: 38,
+      conversionRate: 24,
+      leadsBySource: sources.map(source => ({
+        source,
+        count: Math.floor(Math.random() * 50) + 10
+      })),
+      leadsByStatus: statuses.map(status => ({
+        status,
+        count: Math.floor(Math.random() * 40) + 5
+      })),
+      leadTrend: Array.from({ length: 30 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (29 - i));
+        return {
+          date: date.toISOString().split('T')[0],
+          leads: Math.floor(Math.random() * 10) + 1
+        };
+      })
     };
     return result;
   }
@@ -210,7 +231,7 @@ function mockLeadData(endpoint: string): Lead[] | LeadStats {
       status,
       source,
       score: Math.floor(Math.random() * 100),
-      assignedTo: `${['Alex', 'Sam', 'Chris', 'Jordan', 'Taylor'][Math.floor(Math.random() * 5)]} ${['Wilson', 'Davis', 'Anderson', 'Thomas, Moore'][Math.floor(Math.random() * 5)]}`,
+      assignedTo: `${['Alex', 'Sam', 'Chris', 'Jordan', 'Taylor'][Math.floor(Math.random() * 5)]} ${['Wilson', 'Davis', 'Anderson', 'Thomas', 'Moore'][Math.floor(Math.random() * 5)]}`,
       lastContact: Math.random() > 0.3 ? new Date(randomDate.getTime() + Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString() : null,
       notes: Math.random() > 0.5 ? `Interested in our ${['cloud services', 'security solutions', 'infrastructure upgrades', 'software development', 'managed services'][Math.floor(Math.random() * 5)]} offerings.` : '',
     };
@@ -219,8 +240,174 @@ function mockLeadData(endpoint: string): Lead[] | LeadStats {
   return leads;
 }
 
+function mockLeadConfigData(endpoint: string): any {
+  // Mock form configurations
+  if (endpoint.includes('/forms')) {
+    if (endpoint.includes('/forms/')) {
+      // Single form configuration
+      return mockFormDefinition();
+    }
+    // List of form configurations
+    return Array(3).fill(null).map((_, i) => mockFormDefinition(i));
+  }
+
+  // Mock scoring rules
+  if (endpoint.includes('/scoring-rules')) {
+    if (endpoint.includes('/scoring-rules/')) {
+      // Single scoring rule
+      return mockScoringRule();
+    }
+    // List of scoring rules
+    return Array(5).fill(null).map((_, i) => mockScoringRule(i));
+  }
+
+  // Mock assignment rules
+  if (endpoint.includes('/assignment-rules')) {
+    if (endpoint.includes('/assignment-rules/')) {
+      // Single assignment rule
+      return mockAssignmentRule();
+    }
+    // List of assignment rules
+    return Array(3).fill(null).map((_, i) => mockAssignmentRule(i));
+  }
+
+  return null;
+}
+
+function mockFormDefinition(index = 0): any {
+  return {
+    id: `form-${index + 1}`,
+    sections: [
+      {
+        id: `section-${index}-1`,
+        title: 'Contact Information',
+        fields: [
+          {
+            id: 'name',
+            type: 'text',
+            label: 'Full Name',
+            required: true,
+            validation: [
+              { type: 'required', message: 'Name is required' }
+            ]
+          },
+          {
+            id: 'email',
+            type: 'email',
+            label: 'Email Address',
+            required: true,
+            validation: [
+              { type: 'required', message: 'Email is required' },
+              { type: 'pattern', value: '^[^@]+@[^@]+\\.[^@]+$', message: 'Invalid email format' }
+            ]
+          },
+          {
+            id: 'phone',
+            type: 'phone',
+            label: 'Phone Number',
+            required: false
+          }
+        ]
+      },
+      {
+        id: `section-${index}-2`,
+        title: 'Company Details',
+        fields: [
+          {
+            id: 'company',
+            type: 'text',
+            label: 'Company Name',
+            required: true
+          },
+          {
+            id: 'industry',
+            type: 'select',
+            label: 'Industry',
+            required: true,
+            options: [
+              { label: 'Technology', value: 'tech' },
+              { label: 'Healthcare', value: 'health' },
+              { label: 'Finance', value: 'finance' },
+              { label: 'Manufacturing', value: 'manufacturing' },
+              { label: 'Other', value: 'other' }
+            ]
+          }
+        ]
+      }
+    ],
+    layout: 'single',
+    theme: {
+      variant: 'default'
+    },
+    validationRules: []
+  };
+}
+
+function mockScoringRule(index = 0): any {
+  return {
+    id: `rule-${index + 1}`,
+    field: ['industry', 'company_size', 'budget', 'timeline'][index % 4],
+    operator: ['equals', 'greaterThan', 'contains'][index % 3],
+    value: ['tech', '100', '10000', 'immediate'][index % 4],
+    score: (index + 1) * 10,
+    priority: index + 1
+  };
+}
+
+function mockAssignmentRule(index = 0): any {
+  return {
+    id: `assignment-${index + 1}`,
+    conditions: [
+      {
+        field: ['score', 'industry', 'source'][index % 3],
+        operator: ['greaterThan', 'equals', 'contains'][index % 3],
+        value: ['50', 'tech', 'website'][index % 3]
+      }
+    ],
+    assignTo: `${['Alex', 'Sam', 'Chris', 'Jordan', 'Taylor'][index % 5]} ${['Wilson', 'Davis', 'Anderson', 'Thomas', 'Moore'][index % 5]}`,
+    priority: index + 1
+  };
+}
+
+function mockValidateFormData(data: any): any {
+  const errors: Record<string, string[]> = {};
+  let isValid = true;
+
+  // Simple validation example
+  if (data.email && !data.email.includes('@')) {
+    errors.email = ['Invalid email format'];
+    isValid = false;
+  }
+
+  if (!data.name) {
+    errors.name = ['Name is required'];
+    isValid = false;
+  }
+
+  return {
+    isValid,
+    errors
+  };
+}
+
+function mockSubmitForm(data: any): Lead {
+  return {
+    id: `lead-${Date.now()}`,
+    name: data.name || 'Unknown',
+    company: data.company || 'Unknown',
+    email: data.email || '',
+    phone: data.phone || '',
+    createdAt: new Date().toISOString(),
+    status: 'New',
+    source: 'Web Form',
+    score: Math.floor(Math.random() * 100),
+    assignedTo: '',
+    lastContact: null,
+    notes: data.notes || ''
+  };
+}
+
 function mockDashboardData(endpoint: string): DashboardData {
-  
   return {
     summary: {
       newLeads: 24,
