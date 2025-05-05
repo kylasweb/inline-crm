@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,8 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import LeadManagement from "./pages/LeadManagement";
-import Opportunities from "./pages/Opportunities";
+import OpportunityManagement from "./pages/OpportunityManagement";
+import AccountManagement from "./pages/AccountManagement";
 import Tickets from "./pages/Tickets";
+import Quotations from "./pages/Quotations";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./components/ComingSoon";
 import Landing from "./pages/Landing";
@@ -38,18 +39,20 @@ const App = () => (
             {/* Protected pages */}
             <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
             <Route path="/leads" element={<Layout><LeadManagement /></Layout>} />
-            <Route path="/opportunities" element={<Layout><Opportunities /></Layout>} />
+            <Route path="/opportunities" element={<Layout><OpportunityManagement /></Layout>} />
             <Route path="/tickets" element={<Layout><Tickets /></Layout>} />
             <Route path="/tickets/my-tickets" element={<Layout><Tickets /></Layout>} />
             <Route path="/tickets/kb" element={<Layout><ComingSoon name="Knowledge Base" /></Layout>} />
             <Route path="/leads/new" element={<Layout><LeadManagement filter="new" /></Layout>} />
             <Route path="/leads/analytics" element={<Layout><LeadManagement activeTab="stats" /></Layout>} />
-            <Route path="/opportunities/deals" element={<Layout><Opportunities /></Layout>} />
-            <Route path="/opportunities/forecast" element={<Layout><Opportunities initialTab="forecast" /></Layout>} />
+            <Route path="/opportunities/deals" element={<Layout><OpportunityManagement activeTab="list" /></Layout>} />
+            <Route path="/opportunities/forecast" element={<Layout><OpportunityManagement activeTab="forecasting" /></Layout>} />
             
             {/* The rest of the modules would be added here */}
-            <Route path="/accounts/*" element={<Layout><ComingSoon name="Account & Contact Management" /></Layout>} />
-            <Route path="/quotations/*" element={<Layout><ComingSoon name="Quotation Management" /></Layout>} />
+            <Route path="/accounts" element={<Layout><AccountManagement /></Layout>} />
+            <Route path="/accounts/list" element={<Layout><AccountManagement activeTab="list" /></Layout>} />
+            <Route path="/accounts/analytics" element={<Layout><AccountManagement activeTab="analytics" /></Layout>} />
+            <Route path="/quotations" element={<Layout><Quotations /></Layout>} />
             <Route path="/amc/*" element={<Layout><ComingSoon name="AMC & Licensing" /></Layout>} />
             <Route path="/presales/*" element={<Layout><ComingSoon name="Presales Management" /></Layout>} />
             <Route path="/documents/*" element={<Layout><ComingSoon name="Documentation Repository" /></Layout>} />

@@ -7,18 +7,8 @@ import { AssignmentResult } from './assignment/assignmentTypes';
 import { enrichmentService } from './enrichment/enrichmentService';
 import { LeadEnrichmentData } from './enrichment/enrichmentTypes';
 
-// Existing interfaces
-export interface LeadStats {
-  totalLeads: number;
-  newLeads: number;
-  qualifiedLeads: number;
-  conversionRate: number;
-  leadsBySource: { source: string; count: number }[];
-  leadsByStatus: { status: string; count: number }[];
-  leadTrend: { date: string; leads: number }[];
-}
-
-export interface LeadFormData {
+// Make interfaces compatible with Record<string, unknown>
+export interface LeadFormData extends Record<string, unknown> {
   name: string;
   company: string;
   email: string;
@@ -28,7 +18,7 @@ export interface LeadFormData {
   notes?: string;
 }
 
-export interface LeadScoringRule {
+export interface LeadScoringRule extends Record<string, unknown> {
   id: string;
   field: string;
   operator: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan';
@@ -37,7 +27,7 @@ export interface LeadScoringRule {
   priority: number;
 }
 
-export interface LeadAssignmentRule {
+export interface LeadAssignmentRule extends Record<string, unknown> {
   id: string;
   conditions: Array<{
     field: string;
@@ -48,13 +38,23 @@ export interface LeadAssignmentRule {
   priority: number;
 }
 
+export interface LeadStats {
+  totalLeads: number;
+  newLeads: number;
+  qualifiedLeads: number;
+  conversionRate: number;
+  leadsBySource: { source: string; count: number }[];
+  leadsByStatus: { status: string; count: number }[];
+  leadTrend: { date: string; leads: number }[];
+}
+
 export interface LeadFormValidationResult {
   isValid: boolean;
   errors: Record<string, string[]>;
 }
 
 export const leadService = {
-  // Existing lead methods
+  // Core CRUD operations
   async getLeads(): Promise<ApiResponse<Lead[]>> {
     return fetchData<Lead[]>('/leads');
   },
@@ -68,12 +68,10 @@ export const leadService = {
   },
   
   async createLead(leadData: LeadFormData): Promise<ApiResponse<Lead>> {
-    const response = await postData<Lead>('/leads', leadData);
+    const response = await postData<Lead>('/leads', leadData as Record<string, unknown>);
     if (response.success && response.data) {
-      // Start enrichment process
       const enrichmentData = await enrichmentService.enrichLead(response.data);
       
-      // Update lead with enriched data if available
       if (enrichmentData.company || enrichmentData.contact) {
         const enrichedLeadData: Partial<LeadFormData> = {};
         
@@ -167,7 +165,7 @@ export const leadService = {
   },
 
   // Update lead qualification data
-  async updateLeadQualification(leadId: string, qualificationData: QualificationResult): Promise<ApiResponse<Lead>> {
+  async updateLeadQualification(leadId: string, qualificationData: QualificationResult & Record<string, unknown>): Promise<ApiResponse<Lead>> {
     return updateData<Lead>(`/leads/${leadId}/qualification`, qualificationData);
   },
 
@@ -188,7 +186,7 @@ export const leadService = {
   },
   
   async updateLead(id: string, leadData: Partial<LeadFormData>): Promise<ApiResponse<Lead>> {
-    return updateData<Lead>(`/leads/${id}`, leadData);
+    return updateData<Lead>(`/leads/${id}`, leadData as Record<string, unknown>);
   },
   
   async deleteLead(id: string): Promise<ApiResponse<void>> {
@@ -204,12 +202,12 @@ export const leadService = {
     return fetchData<FormDefinition>(`/lead-config/forms/${id}`);
   },
 
-  async createFormConfiguration(config: FormDefinition): Promise<ApiResponse<FormDefinition>> {
+  async createFormConfiguration(config: FormDefinition & Record<string, unknown>): Promise<ApiResponse<FormDefinition>> {
     return postData<FormDefinition>('/lead-config/forms', config);
   },
 
   async updateFormConfiguration(id: string, config: Partial<FormDefinition>): Promise<ApiResponse<FormDefinition>> {
-    return updateData<FormDefinition>(`/lead-config/forms/${id}`, config);
+    return updateData<FormDefinition>(`/lead-config/forms/${id}`, config as Record<string, unknown>);
   },
 
   async deleteFormConfiguration(id: string): Promise<ApiResponse<void>> {
@@ -226,7 +224,7 @@ export const leadService = {
   },
 
   async updateScoringRule(id: string, rule: Partial<LeadScoringRule>): Promise<ApiResponse<LeadScoringRule>> {
-    return updateData<LeadScoringRule>(`/lead-config/scoring-rules/${id}`, rule);
+    return updateData<LeadScoringRule>(`/lead-config/scoring-rules/${id}`, rule as Record<string, unknown>);
   },
 
   async deleteScoringRule(id: string): Promise<ApiResponse<void>> {
@@ -243,7 +241,7 @@ export const leadService = {
   },
 
   async updateAssignmentRule(id: string, rule: Partial<LeadAssignmentRule>): Promise<ApiResponse<LeadAssignmentRule>> {
-    return updateData<LeadAssignmentRule>(`/lead-config/assignment-rules/${id}`, rule);
+    return updateData<LeadAssignmentRule>(`/lead-config/assignment-rules/${id}`, rule as Record<string, unknown>);
   },
 
   async deleteAssignmentRule(id: string): Promise<ApiResponse<void>> {
@@ -262,36 +260,9 @@ export const leadService = {
   async calculateLeadScore(leadId: string): Promise<ApiResponse<number>> {
     return fetchData<number>(`/leads/${leadId}/score`);
   },
-
-  // Updated assignment methods
-  async assignLead(leadId: string): Promise<ApiResponse<Lead>> {
-    const leadResponse = await this.getLeadById(leadId);
-    if (!leadResponse.success || !leadResponse.data) {
-      return { success: false, error: 'Lead not found' };
-    }
-
-    const assignmentResult = await assignmentService.assignLead(leadResponse.data);
-    if (assignmentResult.success && assignmentResult.assignedTo) {
-      return this.updateLead(leadId, {
-        assignedTo: assignmentResult.assignedTo
-      });
-    }
-
-    return {
-      success: false,
-      error: assignmentResult.reason || 'Assignment failed'
-    };
-  },
-
-  async reassignLead(leadId: string): Promise<ApiResponse<Lead>> {
-    // First unassign the lead
-    await this.updateLead(leadId, { assignedTo: '' });
-    // Then trigger new assignment
-    return this.assignLead(leadId);
-  }
 };
 
-// Helper function for lead management
+// Helper functions for lead management
 export const fetchLeads = (dateRange: DateRange, searchQuery: string, leadSource: string, leadStatus: string): Promise<Lead[]> => {
   return leadService.getLeads().then(response => {
     if (response.success && response.data) {

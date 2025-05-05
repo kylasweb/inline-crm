@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis 
@@ -15,6 +15,7 @@ import NeoBadge from '@/components/ui/neo-badge';
 import { ArrowUpRight, FileText, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
 import { DateRange as ReactDayPickerDateRange } from 'react-day-picker';
+import LeadFormDialog from '@/components/leads/LeadFormDialog';
 
 // Define chart colors
 const CHART_COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#D6BCFA', '#8B5CF6', '#D946EF', '#F97316', '#0EA5E9'];
@@ -28,6 +29,8 @@ interface LeadManagementProps {
 type DateRange = ReactDayPickerDateRange;
 
 const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "list" }) => {
+  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
@@ -35,6 +38,11 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
   const [searchQuery, setSearchQuery] = useState('');
   const [leadSource, setLeadSource] = useState('All Sources');
   const [leadStatus, setLeadStatus] = useState('All Statuses');
+
+  const handleLeadSuccess = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+    queryClient.invalidateQueries({ queryKey: ['leadStats'] });
+  }, [queryClient]);
 
   const { data: leads, isLoading: leadsLoading } = useQuery({
     queryKey: ['leads', dateRange, searchQuery, leadSource, leadStatus, filter, activeTab],
@@ -65,7 +73,7 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
           <p className="text-neo-text-secondary">Track and manage incoming leads</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button className="neo-button">
+          <Button className="neo-button" onClick={() => setIsAddLeadOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Lead
           </Button>
@@ -278,6 +286,12 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
           </NeoCard>
         </TabsContent>
       </Tabs>
+
+      <LeadFormDialog 
+        isOpen={isAddLeadOpen}
+        onClose={() => setIsAddLeadOpen(false)}
+        onSuccess={handleLeadSuccess}
+      />
     </div>
   );
 };

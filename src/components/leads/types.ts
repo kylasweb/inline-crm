@@ -24,7 +24,7 @@ export interface FormSection {
   fields: FormField[];
 }
 
-export interface FormDefinition {
+export interface FormDefinition extends Record<string, unknown> {
   id: string;
   name: string;
   description?: string;
