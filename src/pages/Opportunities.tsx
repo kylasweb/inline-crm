@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { ArrowRight, BarChart as BarChartIcon, ChevronDown, Edit, Filter, Plus, RefreshCcw, Trash, Clock as ClockIcon } from 'lucide-react';
+import { ArrowRight, BarChart as BarChartIcon, ChevronDown, Edit, Filter, Plus, RefreshCcw, Trash, Clock } from 'lucide-react';
 import NeoCard from '@/components/ui/neo-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -126,7 +127,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
       toast({
         title: "Success",
         description: "Opportunity created successfully",
-        variant: "success"
+        variant: "default"
       });
       setIsCreateDialogOpen(false);
       setNewOpportunity({
@@ -273,7 +274,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-sm text-neo-text-secondary">Avg Sales Cycle</h3>
             <span className="neo-flat rounded-md p-1">
-              <ClockIcon className="h-4 w-4 text-neo-primary" />
+              <Clock className="h-4 w-4 text-neo-primary" />
             </span>
           </div>
           <p className="text-2xl font-bold">{stats?.salesCycle || 0} days</p>
@@ -527,7 +528,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
                       <span className="font-medium">{formatCurrency(stage.value)}</span>
                     </div>
                     <Progress 
-                      value={(stage.value / stats.totalValue) * 100} 
+                      value={(stage.value / stats.totalValue) * 100}
                       className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                     />
                     <div className="flex justify-between text-xs text-neo-text-secondary">
@@ -583,7 +584,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
                   </div>
                   <Progress 
                     value={product.count} 
-                    max={Math.max(...stats.topProducts.map(p => p.count))} 
+                    max={Math.max(...stats.topProducts.map(p => p.count))}
                     className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
                   />
                   <div className="flex justify-between text-xs text-neo-text-secondary">
@@ -740,7 +741,12 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
                   <p className="font-medium">{formatCurrency(selectedOpportunity.value * selectedOpportunity.probability / 100)}</p>
                 </div>
               </div>
-              
-              <Separator className="my-4" />
-              
-              <
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default Opportunities;

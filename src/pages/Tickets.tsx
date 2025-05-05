@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -162,7 +163,7 @@ const Tickets: React.FC = () => {
       toast({
         title: "Success",
         description: "Ticket created successfully",
-        variant: "success"
+        variant: "default"
       });
       setIsCreateDialogOpen(false);
       setNewTicket({
@@ -793,3 +794,12 @@ const Tickets: React.FC = () => {
               <Button className="neo-button">
                 Save Changes
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+export default Tickets;
