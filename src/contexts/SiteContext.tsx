@@ -94,7 +94,7 @@ const defaultHeaderConfig: HeaderConfig = {
   fixed: true
 };
 
-const themePresets: Record<string, ThemePreset> = {
+export const themePresets: Record<string, ThemePreset> = {
   default: {
     name: 'Default',
     primaryColor: '#9b87f5',

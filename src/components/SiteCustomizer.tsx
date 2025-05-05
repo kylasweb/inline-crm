@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Image, Upload } from 'lucide-react';
+import { Image, Upload, Plus, Trash2 } from 'lucide-react';
+import { themePresets } from '@/contexts/SiteContext';
 
 interface CustomizationFormData {
   siteName: string;
@@ -20,18 +21,66 @@ interface CustomizationFormData {
   metaKeywords: string;
   footerText: string;
   customCss: string;
+  activeTheme: string;
+  primaryFont: string;
+  secondaryFont: string;
+  customFonts: Array<{
+    id: string;
+    name: string;
+    url: string;
+  }>;
+  spacing: {
+    container: string;
+    headerHeight: string;
+    sidebarWidth: string;
+    elementGap: string;
+    sectionPadding: string;
+  };
+  customScripts: Array<{
+    id: string;
+    name: string;
+    code: string;
+    active: boolean;
+  }>;
+  socialLinks: Array<{
+    platform: string;
+    url: string;
+    icon: string;
+  }>;
+  headerConfig: {
+    layout: 'default' | 'centered' | 'minimal';
+    showSearch: boolean;
+    showNotifications: boolean;
+    showUserProfile: boolean;
+    fixed: boolean;
+  };
 }
 
 const SiteCustomizer: React.FC = () => {
-  const { 
+  const {
     siteName,
     primaryColor,
     secondaryColor,
     accentColor,
+    isDarkMode,
+    customFonts,
+    primaryFont,
+    secondaryFont,
+    spacing,
+    customScripts,
+    socialLinks,
+    headerConfig,
+    activeTheme,
     updateSiteName,
     updatePrimaryColor,
     updateSecondaryColor,
     updateAccentColor,
+    updateFonts,
+    updateSpacing,
+    updateCustomScripts,
+    updateSocialLinks,
+    updateHeaderConfig,
+    setActiveTheme,
     resetToDefaults
   } = useSiteContext();
   
@@ -46,7 +95,19 @@ const SiteCustomizer: React.FC = () => {
     metaDescription: '',
     metaKeywords: '',
     footerText: '© 2025 ' + siteName + '. All rights reserved.',
-    customCss: ''
+    customCss: '',
+    activeTheme,
+    primaryFont,
+    secondaryFont,
+    customFonts: (customFonts || []).map(font => ({
+      id: font.toLowerCase().replace(/\s+/g, '-'),
+      name: font,
+      url: '' // Default empty URL since we don't have it from context
+    })),
+    spacing,
+    customScripts,
+    socialLinks,
+    headerConfig
   });
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -107,6 +168,20 @@ const SiteCustomizer: React.FC = () => {
       }
     }
 
+    // Update theme and fonts
+    if (formData.activeTheme !== activeTheme) {
+      setActiveTheme(formData.activeTheme);
+    }
+    updateFonts(formData.primaryFont, formData.secondaryFont);
+
+    // Update layout settings
+    updateSpacing(formData.spacing);
+    updateHeaderConfig(formData.headerConfig);
+
+    // Update advanced settings
+    updateCustomScripts(formData.customScripts);
+    updateSocialLinks(formData.socialLinks);
+
     toast({
       title: "Settings Updated",
       description: "Your site customization changes have been applied.",
@@ -126,7 +201,27 @@ const SiteCustomizer: React.FC = () => {
       metaDescription: 'Comprehensive CRM solution for IT companies to manage leads, opportunities, and customer relationships.',
       metaKeywords: 'CRM, IT Business, Lead Management, Customer Relationship, Business Management',
       footerText: '© 2025 Inline SysCRM. All rights reserved.',
-      customCss: ''
+      customCss: '',
+      activeTheme: 'default',
+      primaryFont: 'Inter',
+      secondaryFont: 'Inter',
+      customFonts: [],
+      spacing: {
+        container: '1440px',
+        headerHeight: '64px',
+        sidebarWidth: '280px',
+        elementGap: '16px',
+        sectionPadding: '24px'
+      },
+      customScripts: [],
+      socialLinks: [],
+      headerConfig: {
+        layout: 'default',
+        showSearch: true,
+        showNotifications: true,
+        showUserProfile: true,
+        fixed: true
+      }
     });
     
     toast({
@@ -147,6 +242,8 @@ const SiteCustomizer: React.FC = () => {
       <Tabs defaultValue="branding" className="space-y-4">
         <TabsList>
           <TabsTrigger value="branding">Branding</TabsTrigger>
+          <TabsTrigger value="theme">Theme</TabsTrigger>
+          <TabsTrigger value="layout">Layout</TabsTrigger>
           <TabsTrigger value="metadata">Metadata</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
@@ -413,10 +510,225 @@ const SiteCustomizer: React.FC = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="theme" className="space-y-4">
+          <div className="neo-card">
+            <h2 className="text-lg font-medium mb-4">Theme Presets</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(themePresets).map(([key, theme]) => (
+                <Button
+                  key={key}
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    primaryColor: theme.primaryColor,
+                    secondaryColor: theme.secondaryColor,
+                    accentColor: theme.accentColor,
+                    activeTheme: key,
+                    primaryFont: theme.font,
+                    spacing: theme.spacing,
+                  }))}
+                  className={`p-4 h-auto flex flex-col items-center space-y-2 ${
+                    formData.activeTheme === key ? 'ring-2 ring-offset-2' : ''
+                  }`}
+                  style={{ backgroundColor: theme.primaryColor }}
+                >
+                  <span className="text-white">{theme.name}</span>
+                  <div className="flex space-x-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: theme.secondaryColor }} />
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: theme.accentColor }} />
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="layout" className="space-y-4">
+          <div className="neo-card">
+            <h2 className="text-lg font-medium mb-4">Layout & Spacing</h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="spacing.container">Container Margin</Label>
+                  <Input
+                    id="spacing.container"
+                    name="spacing.container"
+                    value={formData.spacing.container}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      spacing: { ...prev.spacing, container: e.target.value }
+                    }))}
+                    className="neo-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spacing.headerHeight">Header Height</Label>
+                  <Input
+                    id="spacing.headerHeight"
+                    name="spacing.headerHeight"
+                    value={formData.spacing.headerHeight}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      spacing: { ...prev.spacing, headerHeight: e.target.value }
+                    }))}
+                    className="neo-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spacing.elementGap">Element Gap</Label>
+                  <Input
+                    id="spacing.elementGap"
+                    name="spacing.elementGap"
+                    value={formData.spacing.elementGap}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      spacing: { ...prev.spacing, elementGap: e.target.value }
+                    }))}
+                    className="neo-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spacing.sectionPadding">Section Padding</Label>
+                  <Input
+                    id="spacing.sectionPadding"
+                    name="spacing.sectionPadding"
+                    value={formData.spacing.sectionPadding}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      spacing: { ...prev.spacing, sectionPadding: e.target.value }
+                    }))}
+                    className="neo-input"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-md font-medium">Header Layout</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <Button
+                    type="button"
+                    variant={formData.headerConfig.layout === 'default' ? 'default' : 'outline'}
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      headerConfig: { ...prev.headerConfig, layout: 'default' }
+                    }))}
+                  >
+                    Default
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.headerConfig.layout === 'centered' ? 'default' : 'outline'}
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      headerConfig: { ...prev.headerConfig, layout: 'centered' }
+                    }))}
+                  >
+                    Centered
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={formData.headerConfig.layout === 'minimal' ? 'default' : 'outline'}
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      headerConfig: { ...prev.headerConfig, layout: 'minimal' }
+                    }))}
+                  >
+                    Minimal
+                  </Button>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="showSearch"
+                      checked={formData.headerConfig.showSearch}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        headerConfig: { ...prev.headerConfig, showSearch: e.target.checked }
+                      }))}
+                    />
+                    <Label htmlFor="showSearch">Show Search</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="showNotifications"
+                      checked={formData.headerConfig.showNotifications}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        headerConfig: { ...prev.headerConfig, showNotifications: e.target.checked }
+                      }))}
+                    />
+                    <Label htmlFor="showNotifications">Show Notifications</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="showUserProfile"
+                      checked={formData.headerConfig.showUserProfile}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        headerConfig: { ...prev.headerConfig, showUserProfile: e.target.checked }
+                      }))}
+                    />
+                    <Label htmlFor="showUserProfile">Show User Profile</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="fixedHeader"
+                      checked={formData.headerConfig.fixed}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        headerConfig: { ...prev.headerConfig, fixed: e.target.checked }
+                      }))}
+                    />
+                    <Label htmlFor="fixedHeader">Fixed Header</Label>
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full neo-button bg-neo-primary text-white">
+                Apply Layout Settings
+              </Button>
+            </form>
+          </div>
+        </TabsContent>
+
         <TabsContent value="advanced" className="space-y-4">
           <div className="neo-card">
             <h2 className="text-lg font-medium mb-4">Advanced Settings</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="primaryFont">Primary Font</Label>
+                <select
+                  id="primaryFont"
+                  name="primaryFont"
+                  value={formData.primaryFont}
+                  onChange={(e) => setFormData(prev => ({ ...prev, primaryFont: e.target.value }))}
+                  className="w-full p-2 rounded-md border border-gray-300"
+                >
+                  {formData.customFonts.map(font => (
+                    <option key={font.id} value={font.name}>{font.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="secondaryFont">Secondary Font</Label>
+                <select
+                  id="secondaryFont"
+                  name="secondaryFont"
+                  value={formData.secondaryFont}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secondaryFont: e.target.value }))}
+                  className="w-full p-2 rounded-md border border-gray-300"
+                >
+                  {formData.customFonts.map(font => (
+                    <option key={font.id} value={font.name}>{font.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="footerText">Footer Text</Label>
                 <Input
@@ -426,6 +738,125 @@ const SiteCustomizer: React.FC = () => {
                   onChange={handleChange}
                   className="neo-input"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Social Media Links</Label>
+                {formData.socialLinks.map((link, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="Platform"
+                      value={link.platform}
+                      onChange={(e) => {
+                        const newLinks = [...formData.socialLinks];
+                        newLinks[index].platform = e.target.value;
+                        setFormData(prev => ({ ...prev, socialLinks: newLinks }));
+                      }}
+                      className="neo-input w-1/3"
+                    />
+                    <Input
+                      placeholder="URL"
+                      value={link.url}
+                      onChange={(e) => {
+                        const newLinks = [...formData.socialLinks];
+                        newLinks[index].url = e.target.value;
+                        setFormData(prev => ({ ...prev, socialLinks: newLinks }));
+                      }}
+                      className="neo-input flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => {
+                        const newLinks = formData.socialLinks.filter((_, i) => i !== index);
+                        setFormData(prev => ({ ...prev, socialLinks: newLinks }));
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      socialLinks: [...prev.socialLinks, { platform: '', url: '', icon: '' }]
+                    }));
+                  }}
+                >
+                  Add Social Link
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Custom Scripts</Label>
+                {formData.customScripts.map((script, index) => (
+                  <div key={index} className="space-y-2 border p-4 rounded-md">
+                    <Input
+                      placeholder="Script Name"
+                      value={script.name}
+                      onChange={(e) => {
+                        const newScripts = [...formData.customScripts];
+                        newScripts[index].name = e.target.value;
+                        setFormData(prev => ({ ...prev, customScripts: newScripts }));
+                      }}
+                      className="neo-input"
+                    />
+                    <Textarea
+                      value={script.code}
+                      onChange={(e) => {
+                        const newScripts = [...formData.customScripts];
+                        newScripts[index].code = e.target.value;
+                        setFormData(prev => ({ ...prev, customScripts: newScripts }));
+                      }}
+                      className="neo-input min-h-[100px] font-mono"
+                      placeholder="// JavaScript code here"
+                    />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={script.active}
+                          onChange={(e) => {
+                            const newScripts = [...formData.customScripts];
+                            newScripts[index].active = e.target.checked;
+                            setFormData(prev => ({ ...prev, customScripts: newScripts }));
+                          }}
+                        />
+                        <Label>Active</Label>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => {
+                          const newScripts = formData.customScripts.filter((_, i) => i !== index);
+                          setFormData(prev => ({ ...prev, customScripts: newScripts }));
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      customScripts: [...prev.customScripts, {
+                        id: Date.now().toString(),
+                        name: '',
+                        code: '',
+                        active: false
+                      }]
+                    }));
+                  }}
+                >
+                  Add Custom Script
+                </Button>
               </div>
 
               <div className="space-y-2">
