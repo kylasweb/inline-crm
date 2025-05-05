@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,8 @@ import Opportunities from "./pages/Opportunities";
 import Tickets from "./pages/Tickets";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./components/ComingSoon";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,7 +29,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout><Dashboard /></Layout>} />
+          {/* Public pages */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected pages */}
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
           <Route path="/leads" element={<Layout><LeadManagement /></Layout>} />
           <Route path="/opportunities" element={<Layout><Opportunities /></Layout>} />
           <Route path="/tickets" element={<Layout><Tickets /></Layout>} />
