@@ -1,20 +1,4 @@
-
-import { fetchData, postData, updateData, deleteData, ApiResponse } from './api';
-
-export interface Lead {
-  id: string;
-  name: string;
-  company: string;
-  email: string;
-  phone: string;
-  createdAt: string;
-  status: string;
-  source: string;
-  score: number;
-  assignedTo: string;
-  lastContact: string | null;
-  notes: string;
-}
+import { fetchData, postData, updateData, deleteData, ApiResponse, Lead } from './api';
 
 export interface LeadStats {
   totalLeads: number;
@@ -57,13 +41,18 @@ export const leadService = {
     return updateData<Lead>(`/leads/${id}`, leadData);
   },
   
-  async deleteLead(id: string): Promise<ApiResponse> {
+  async deleteLead(id: string): Promise<ApiResponse<void>> {
     return deleteData(`/leads/${id}`);
   }
 };
 
+interface DateRange {
+  from: Date;
+  to?: Date;
+}
+
 // Helper functions for the LeadManagement component
-export const fetchLeads = (dateRange: any, searchQuery: string, leadSource: string, leadStatus: string) => {
+export const fetchLeads = (dateRange: DateRange, searchQuery: string, leadSource: string, leadStatus: string): Promise<Lead[]> => {
   // In a real application, you would use these parameters to filter the data
   return leadService.getLeads().then(response => {
     if (response.success && response.data) {
@@ -95,7 +84,7 @@ export const fetchLeads = (dateRange: any, searchQuery: string, leadSource: stri
   });
 };
 
-export const fetchLeadStats = (dateRange: any) => {
+export const fetchLeadStats = (dateRange: DateRange): Promise<LeadStats> => {
   return leadService.getLeadStats().then(response => {
     if (response.success && response.data) {
       return response.data;

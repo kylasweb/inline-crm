@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -15,6 +14,7 @@ import NeoCard from '@/components/ui/neo-card';
 import NeoBadge from '@/components/ui/neo-badge';
 import { ArrowUpRight, FileText, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
+import { DateRange as ReactDayPickerDateRange } from 'react-day-picker';
 
 // Define chart colors
 const CHART_COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#D6BCFA', '#8B5CF6', '#D946EF', '#F97316', '#0EA5E9'];
@@ -25,8 +25,10 @@ interface LeadManagementProps {
   activeTab?: string;
 }
 
+type DateRange = ReactDayPickerDateRange;
+
 const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "list" }) => {
-  const [dateRange, setDateRange] = useState<any>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
   });

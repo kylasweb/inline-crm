@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -499,14 +498,14 @@ const Tickets: React.FC = () => {
               <div className="space-y-4">
                 {stats?.topClients.map((client, index) => (
                   <div key={client.client} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{client.client}</span>
-                      <span className="font-medium">{client.count} tickets</span>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">{client.client}</p>
+                      <p className="text-sm text-neo-text-secondary">{client.count} Tickets</p>
                     </div>
                     <Progress 
-                      value={client.count} 
-                      max={Math.max(...stats.topClients.map(c => c.count))} 
-                      className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
+                      value={(client.count / stats.totalTickets) * 100} 
+                      max={100} 
+                      className="h-2 rounded-full"
                     />
                   </div>
                 ))}
@@ -514,18 +513,18 @@ const Tickets: React.FC = () => {
             </NeoCard>
             
             <NeoCard className="p-6">
-              <h3 className="font-medium mb-4">Top Issue Categories</h3>
+              <h3 className="font-medium mb-4">Top Categories by Ticket Volume</h3>
               <div className="space-y-4">
                 {stats?.topCategories.map((category, index) => (
                   <div key={category.category} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>{category.category}</span>
-                      <span className="font-medium">{category.count} tickets</span>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">{category.category}</p>
+                      <p className="text-sm text-neo-text-secondary">{category.count} Tickets</p>
                     </div>
                     <Progress 
-                      value={category.count} 
-                      max={Math.max(...stats.topCategories.map(c => c.count))} 
-                      className={`h-2 ${index % 2 === 0 ? 'bg-neo-primary' : 'bg-neo-secondary'}`}
+                      value={(category.count / stats.totalTickets) * 100} 
+                      max={100} 
+                      className="h-2 rounded-full"
                     />
                   </div>
                 ))}
@@ -536,15 +535,11 @@ const Tickets: React.FC = () => {
         
         <TabsContent value="sla" className="p-4">
           <NeoCard className="p-6 text-center">
-            <h3 className="font-medium mb-4">SLA Compliance Tracker</h3>
+            <h3 className="font-medium mb-4">Service Level Agreement (SLA) Tracker</h3>
             <p className="text-neo-text-secondary mb-4">
-              Advanced SLA monitoring dashboard with real-time tracking of response and resolution times.
+              Monitor and manage service level agreements to ensure timely ticket resolution.
             </p>
-            <p>Switch to the SLA Tracker module for detailed analysis</p>
-            <Button className="mt-4 neo-button">
-              Go to SLA Tracker
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Button className="mt-4 neo-button">Configure SLA Settings</Button>
           </NeoCard>
         </TabsContent>
       </Tabs>
@@ -555,107 +550,98 @@ const Tickets: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Create New Ticket</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="subject" className="text-right text-sm">Subject</label>
-              <Input 
-                id="subject" 
-                className="col-span-3 neo-flat" 
-                value={newTicket.subject} 
-                onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})} 
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="description" className="text-right text-sm">Description</label>
-              <Textarea 
-                id="description" 
-                className="col-span-3 neo-flat" 
-                rows={4}
-                value={newTicket.description} 
-                onChange={(e) => setNewTicket({...newTicket, description: e.target.value})} 
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="client" className="text-right text-sm">Client</label>
-              <Input 
-                id="client" 
-                className="col-span-3 neo-flat" 
-                value={newTicket.client} 
-                onChange={(e) => setNewTicket({...newTicket, client: e.target.value})} 
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="priority" className="text-right text-sm">Priority</label>
-              <Select 
-                value={newTicket.priority} 
-                onValueChange={(value) => setNewTicket({...newTicket, priority: value as any})}
-              >
-                <SelectTrigger className="col-span-3 neo-flat">
-                  <SelectValue placeholder="Select Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="type" className="text-right text-sm">Type</label>
-              <Select 
-                value={newTicket.type} 
-                onValueChange={(value) => setNewTicket({...newTicket, type: value as any})}
-              >
-                <SelectTrigger className="col-span-3 neo-flat">
-                  <SelectValue placeholder="Select Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bug">Bug</SelectItem>
-                  <SelectItem value="Feature">Feature Request</SelectItem>
-                  <SelectItem value="Support">Support</SelectItem>
-                  <SelectItem value="Question">Question</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="channel" className="text-right text-sm">Channel</label>
-              <Select 
-                value={newTicket.channel} 
-                onValueChange={(value) => setNewTicket({...newTicket, channel: value as any})}
-              >
-                <SelectTrigger className="col-span-3 neo-flat">
-                  <SelectValue placeholder="Select Channel" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Email">Email</SelectItem>
-                  <SelectItem value="Phone">Phone</SelectItem>
-                  <SelectItem value="Web">Web Portal</SelectItem>
-                  <SelectItem value="Chat">Live Chat</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="subject" className="text-right text-sm">Subject</label>
+            <Input 
+              id="subject" 
+              value={newTicket.subject || ''}
+              onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
+              className="col-span-3 neo-flat" 
+            />
           </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsCreateDialogOpen(false)}
-              className="neo-flat"
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="description" className="text-right text-sm">Description</label>
+            <Textarea 
+              id="description" 
+              value={newTicket.description || ''}
+              onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+              className="col-span-3 neo-flat" 
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="client" className="text-right text-sm">Client</label>
+            <Input 
+              id="client" 
+              value={newTicket.client || ''}
+              onChange={(e) => setNewTicket({...newTicket, client: e.target.value})}
+              className="col-span-3 neo-flat" 
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="priority" className="text-right text-sm">Priority</label>
+            <Select 
+              value={newTicket.priority} 
+              onValueChange={(value) => setNewTicket({...newTicket, priority: value as  'Critical' | 'High' | 'Medium' | 'Low'})}
             >
+              <SelectTrigger className="col-span-3 neo-flat">
+                <SelectValue placeholder="Select Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Critical">Critical</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="type" className="text-right text-sm">Type</label>
+            <Select 
+              value={newTicket.type} 
+              onValueChange={(value) => setNewTicket({...newTicket, type: value as 'Bug' | 'Feature' | 'Support' | 'Question' | 'Other'})}
+            >
+              <SelectTrigger className="col-span-3 neo-flat">
+                <SelectValue placeholder="Select Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Bug">Bug</SelectItem>
+                <SelectItem value="Feature">Feature Request</SelectItem>
+                <SelectItem value="Support">Support</SelectItem>
+                <SelectItem value="Question">Question</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="channel" className="text-right text-sm">Channel</label>
+            <Select 
+              value={newTicket.channel} 
+              onValueChange={(value) => setNewTicket({...newTicket, channel: value as 'Email' | 'Phone' | 'Web' | 'Chat'})}
+            >
+              <SelectTrigger className="col-span-3 neo-flat">
+                <SelectValue placeholder="Select Channel" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Email">Email</SelectItem>
+                <SelectItem value="Phone">Phone</SelectItem>
+                <SelectItem value="Web">Web</SelectItem>
+                <SelectItem value="Chat">Chat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setIsCreateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleCreateTicket} 
-              disabled={!newTicket.subject || !newTicket.client || !newTicket.description}
-              className="neo-button"
-            >
-              Create
+            <Button type="button" onClick={handleCreateTicket}>
+              Create Ticket
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -667,121 +653,99 @@ const Tickets: React.FC = () => {
           <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <span>{selectedTicket.id}</span>
+                {selectedTicket.subject}
                 <Badge className={`${statusColorMap[selectedTicket.status]} text-white ml-2`}>
-                  <span className="flex items-center gap-1">
-                    {statusIconMap[selectedTicket.status]}
-                    {selectedTicket.status}
-                  </span>
+                  {selectedTicket.status}
                 </Badge>
               </DialogTitle>
             </DialogHeader>
             
-            <div className="py-4">
-              <h2 className="text-xl font-bold mb-2">{selectedTicket.subject}</h2>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Badge variant="outline">{selectedTicket.type}</Badge>
-                <Badge className={`${priorityColorMap[selectedTicket.priority]} text-white`}>
-                  {selectedTicket.priority}
-                </Badge>
-                {selectedTicket.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">{tag}</Badge>
-                ))}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-neo-text-secondary">Client</p>
-                  <p className="font-medium">{selectedTicket.client}</p>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Ticket ID</h3>
+                  <p>{selectedTicket.id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-neo-text-secondary">Assignee</p>
-                  <p className="font-medium">{selectedTicket.assignee || 'Unassigned'}</p>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Client</h3>
+                  <p>{selectedTicket.client}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-neo-text-secondary">Created</p>
-                  <p className="font-medium">{new Date(selectedTicket.createdAt).toLocaleString()}</p>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Priority</h3>
+                  <p>{selectedTicket.priority}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-neo-text-secondary">Last Updated</p>
-                  <p className="font-medium">{new Date(selectedTicket.updatedAt).toLocaleString()}</p>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Type</h3>
+                  <p>{selectedTicket.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-neo-text-secondary">Channel</p>
-                  <p className="font-medium">{selectedTicket.channel}</p>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Channel</h3>
+                  <p>{selectedTicket.channel}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-neo-text-secondary">SLA Status</p>
-                  <div className="flex items-center">
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Created At</h3>
+                  <p>{formatDistance(new Date(selectedTicket.createdAt), new Date(), { addSuffix: true })}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">Due Date</h3>
+                  <p>{selectedTicket.dueDate ? formatDistance(new Date(selectedTicket.dueDate), new Date(), { addSuffix: true }) : 'No due date'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-neo-text-secondary">SLA</h3>
+                  <p>
+                    Response Time: {selectedTicket.sla.responseTime}h, Resolution Time: {selectedTicket.sla.resolutionTime}h
                     {selectedTicket.sla.breached ? (
-                      <Badge variant="destructive">SLA Breached</Badge>
+                      <Badge variant="destructive">Breached</Badge>
                     ) : (
-                      <Badge variant="default">Within SLA</Badge>
+                      <Badge>Within SLA</Badge>
                     )}
-                  </div>
+                  </p>
                 </div>
               </div>
               
-              <Separator className="my-4" />
-              
-              <div className="mb-6">
-                <h3 className="font-medium mb-2">Description</h3>
-                <div className="neo-flat p-4 rounded-lg">
-                  <p className="whitespace-pre-wrap">{selectedTicket.description}</p>
-                </div>
+              <div>
+                <h3 className="text-sm font-medium text-neo-text-secondary">Description</h3>
+                <p>{selectedTicket.description}</p>
               </div>
               
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium">Comments</h3>
-                  <Button size="sm" variant="ghost" className="neo-flat">Add Comment</Button>
-                </div>
-                
+              <div>
+                <h3 className="text-sm font-medium text-neo-text-secondary">Comments</h3>
                 {selectedTicket.comments.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {selectedTicket.comments.map((comment, index) => (
-                      <div key={index} className="neo-flat p-4 rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center">
-                            <Avatar className="h-6 w-6 mr-2">
-                              <div className="neo-flat h-6 w-6 rounded-full flex items-center justify-center">
-                                {comment.author.slice(0, 2)}
-                              </div>
-                            </Avatar>
-                            <span className="font-medium">{comment.author}</span>
+                      <div key={index} className="flex items-start space-x-2">
+                        <Avatar className="h-6 w-6 mr-2">
+                          <div className="neo-flat h-6 w-6 rounded-full flex items-center justify-center">
+                            {comment.author.slice(0, 2)}
                           </div>
-                          <span className="text-xs text-neo-text-secondary">
-                            {new Date(comment.timestamp).toLocaleString()}
-                          </span>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{comment.author}</p>
+                          <p className="text-xs text-neo-text-secondary">{formatDistance(new Date(comment.timestamp), new Date(), { addSuffix: true })}</p>
+                          <p>{comment.content}</p>
                         </div>
-                        <p className="whitespace-pre-wrap">{comment.content}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-neo-text-secondary text-center p-4">No comments yet</p>
+                  <p className="text-neo-text-secondary">No comments yet</p>
                 )}
-              </div>
-              
-              <div className="mt-4">
-                <Textarea 
-                  placeholder="Add your comment here..." 
-                  className="neo-flat mb-2"
-                  rows={3}
-                />
-                <div className="flex justify-end">
-                  <Button className="neo-button">Post Comment</Button>
-                </div>
               </div>
             </div>
             
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-neo-text-secondary">Add Comment</h3>
+              <Textarea placeholder="Write your comment here..." className="neo-flat" />
+            </div>
+            
             <DialogFooter className="flex flex-wrap gap-2">
-              <Button variant="outline" className="neo-flat">
-                Assign
+              <Button type="button" variant="secondary" onClick={() => setIsViewDialogOpen(false)}>
+                Close
               </Button>
+              
               <Select defaultValue={selectedTicket.status}>
-                <SelectTrigger className="w-32 neo-flat">
-                  <SelectValue />
+                <SelectTrigger className="w-36 neo-flat">
+                  <SelectValue placeholder="Update Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Open">Open</SelectItem>
@@ -791,8 +755,9 @@ const Tickets: React.FC = () => {
                   <SelectItem value="Closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
-              <Button className="neo-button">
-                Save Changes
+              
+              <Button type="button">
+                Add Comment
               </Button>
             </DialogFooter>
           </DialogContent>

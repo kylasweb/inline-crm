@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
@@ -127,10 +128,8 @@ export default {
 		}
 	},
 	plugins: [
-		require("tailwindcss-animate"),
-		// Add a custom plugin to handle opacity modifiers for our neo-* custom properties
+		tailwindcssAnimate,
 		plugin(function({ addUtilities, theme, matchUtilities }) {
-			// Add a utility for ring color with neo-primary
 			matchUtilities(
 				{
 					'ring-neo-primary': (value) => ({

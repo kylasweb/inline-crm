@@ -1,10 +1,9 @@
-
 /**
  * Base API service for making HTTP requests
  */
 const API_BASE_URL = 'https://api.example.com'; // Replace with your API URL in production
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
@@ -20,12 +19,12 @@ export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
     if (endpoint.includes('/leads')) {
       return {
         success: true,
-        data: mockLeadData(endpoint) as unknown as T
+        data: mockLeadData(endpoint) as T
       };
     } else if (endpoint.includes('/dashboard')) {
       return {
         success: true,
-        data: mockDashboardData(endpoint) as unknown as T
+        data: mockDashboardData(endpoint) as T
       };
     }
     
@@ -42,7 +41,7 @@ export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
   }
 }
 
-export async function postData<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
+export async function postData<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
   try {
     // Simulating API delay
     await new Promise(resolve => setTimeout(resolve, 700));
@@ -50,7 +49,7 @@ export async function postData<T>(endpoint: string, data: any): Promise<ApiRespo
     // Mock successful response
     return {
       success: true,
-      data: { ...data, id: `mock-${Date.now()}`, createdAt: new Date().toISOString() } as unknown as T,
+      data: { ...(data as Record<string, unknown>), id: `mock-${Date.now()}`, createdAt: new Date().toISOString() } as T,
       message: 'Data saved successfully'
     };
   } catch (error) {
@@ -61,7 +60,7 @@ export async function postData<T>(endpoint: string, data: any): Promise<ApiRespo
   }
 }
 
-export async function updateData<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
+export async function updateData<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
   try {
     // Simulating API delay
     await new Promise(resolve => setTimeout(resolve, 600));
@@ -69,7 +68,7 @@ export async function updateData<T>(endpoint: string, data: any): Promise<ApiRes
     // Mock successful response
     return {
       success: true,
-      data: { ...data, updatedAt: new Date().toISOString() } as unknown as T,
+      data: { ...(data as Record<string, unknown>), updatedAt: new Date().toISOString() } as T,
       message: 'Data updated successfully'
     };
   } catch (error) {
@@ -80,7 +79,7 @@ export async function updateData<T>(endpoint: string, data: any): Promise<ApiRes
   }
 }
 
-export async function deleteData(endpoint: string): Promise<ApiResponse> {
+export async function deleteData(endpoint: string): Promise<ApiResponse<void>> {
   try {
     // Simulating API delay
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -98,14 +97,78 @@ export async function deleteData(endpoint: string): Promise<ApiResponse> {
   }
 }
 
+export interface Lead {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  status: string;
+  source: string;
+  score: number;
+  assignedTo: string;
+  lastContact: string | null;
+  notes: string;
+}
+
+interface DashboardData {
+  summary: {
+    newLeads: number;
+    openOpportunities: number;
+    pendingTickets: number;
+    upcomingRenewals: number;
+  };
+  revenueStats: {
+    thisMonth: number;
+    lastMonth: number;
+    forecast: number;
+    quarterly: { month: string; revenue: number }[];
+  };
+  ticketStats: {
+    open: number;
+    inProgress: number;
+    pendingCustomer: number;
+    resolved: number;
+    priorityDistribution: { priority: string; count: number }[];
+    responseTimeAvg: number;
+    resolutionTimeAvg: number;
+  };
+  pipelineStats: {
+    stages: { stage: string; count: number; value: number }[];
+    winRate: number;
+    averageDealSize: number;
+    salesCycle: number;
+  };
+  recentActivity: { id: number; type: string; action: string; subject: string; timestamp: string; user: string }[];
+}
+
+interface LeadStats {
+  totalLeads: number;
+  newLeadsToday: number;
+  leadsBySource: { source: string; count: number }[];
+  leadsByStatus: { status: string; count: number }[];
+  conversionRate: number;
+  averageResponseTime: number;
+}
+
 // Mock data generators
-function mockLeadData(endpoint: string): any {
+function mockLeadData(endpoint: string): Lead[] | LeadStats {
   const statuses = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation'];
   const sources = ['Website', 'Referral', 'LinkedIn', 'Cold Call', 'Trade Show', 'Email Campaign'];
   const companies = ['Acme Corp', 'Globex Inc', 'Initech', 'Umbrella Corp', 'Wayne Enterprises', 'Stark Industries'];
   
+  interface MockLeadStats {
+    totalLeads: number;
+    newLeadsToday: number;
+    leadsBySource: { source: string; count: number }[];
+    leadsByStatus: { status: string; count: number }[];
+    conversionRate: number;
+    averageResponseTime: number;
+  }
+
   if (endpoint.includes('/leads/stats')) {
-    return {
+    const result: MockLeadStats = {
       totalLeads: 156,
       newLeadsToday: 12,
       leadsBySource: [
@@ -126,9 +189,10 @@ function mockLeadData(endpoint: string): any {
       conversionRate: 24, // percentage
       averageResponseTime: 3.5, // hours
     };
+    return result;
   }
   
-  const leads = Array(25).fill(null).map((_, idx) => {
+  const leads: Lead[] = Array(25).fill(null).map((_, idx) => {
     const randomDate = new Date();
     randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 30));
     
@@ -146,7 +210,7 @@ function mockLeadData(endpoint: string): any {
       status,
       source,
       score: Math.floor(Math.random() * 100),
-      assignedTo: `${['Alex', 'Sam', 'Chris', 'Jordan', 'Taylor'][Math.floor(Math.random() * 5)]} ${['Wilson', 'Davis', 'Anderson', 'Thomas', 'Moore'][Math.floor(Math.random() * 5)]}`,
+      assignedTo: `${['Alex', 'Sam', 'Chris', 'Jordan', 'Taylor'][Math.floor(Math.random() * 5)]} ${['Wilson', 'Davis', 'Anderson', 'Thomas, Moore'][Math.floor(Math.random() * 5)]}`,
       lastContact: Math.random() > 0.3 ? new Date(randomDate.getTime() + Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString() : null,
       notes: Math.random() > 0.5 ? `Interested in our ${['cloud services', 'security solutions', 'infrastructure upgrades', 'software development', 'managed services'][Math.floor(Math.random() * 5)]} offerings.` : '',
     };
@@ -155,7 +219,8 @@ function mockLeadData(endpoint: string): any {
   return leads;
 }
 
-function mockDashboardData(endpoint: string): any {
+function mockDashboardData(endpoint: string): DashboardData {
+  
   return {
     summary: {
       newLeads: 24,
@@ -209,3 +274,5 @@ function mockDashboardData(endpoint: string): any {
     ]
   };
 }
+
+export type DashboardDataReturn = ReturnType<typeof mockDashboardData>
