@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -245,7 +246,7 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
                   <BarChart data={stats?.leadTrend}>
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip />
+                    <RechartsTooltip />
                     <Legend />
                     <Bar dataKey="leads" fill="#8884d8" name="New Leads" />
                   </BarChart>

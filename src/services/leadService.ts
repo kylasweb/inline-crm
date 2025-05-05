@@ -18,11 +18,12 @@ export interface Lead {
 
 export interface LeadStats {
   totalLeads: number;
-  newLeadsToday: number;
+  newLeads: number;
+  qualifiedLeads: number;
+  conversionRate: number;
   leadsBySource: { source: string; count: number }[];
   leadsByStatus: { status: string; count: number }[];
-  conversionRate: number;
-  averageResponseTime: number;
+  leadTrend: { date: string; leads: number }[];
 }
 
 export interface LeadFormData {
@@ -59,4 +60,54 @@ export const leadService = {
   async deleteLead(id: string): Promise<ApiResponse> {
     return deleteData(`/leads/${id}`);
   }
+};
+
+// Helper functions for the LeadManagement component
+export const fetchLeads = (dateRange: any, searchQuery: string, leadSource: string, leadStatus: string) => {
+  // In a real application, you would use these parameters to filter the data
+  return leadService.getLeads().then(response => {
+    if (response.success && response.data) {
+      let filteredLeads = response.data;
+      
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filteredLeads = filteredLeads.filter(lead => 
+          lead.name.toLowerCase().includes(query) || 
+          lead.email.toLowerCase().includes(query) || 
+          lead.company.toLowerCase().includes(query)
+        );
+      }
+      
+      // Filter by source
+      if (leadSource && leadSource !== 'All Sources') {
+        filteredLeads = filteredLeads.filter(lead => lead.source === leadSource);
+      }
+      
+      // Filter by status
+      if (leadStatus && leadStatus !== 'All Statuses') {
+        filteredLeads = filteredLeads.filter(lead => lead.status === leadStatus);
+      }
+      
+      return filteredLeads;
+    }
+    return [];
+  });
+};
+
+export const fetchLeadStats = (dateRange: any) => {
+  return leadService.getLeadStats().then(response => {
+    if (response.success && response.data) {
+      return response.data;
+    }
+    return {
+      totalLeads: 0,
+      newLeads: 0,
+      qualifiedLeads: 0,
+      conversionRate: 0,
+      leadsBySource: [],
+      leadsByStatus: [],
+      leadTrend: []
+    };
+  });
 };
