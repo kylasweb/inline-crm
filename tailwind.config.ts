@@ -1,5 +1,5 @@
-
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 export default {
 	darkMode: ["class"],
@@ -65,17 +65,17 @@ export default {
 				},
 				// Neomorphic specific colors
 				neo: {
-					bg: '#f1f0fb',
+					bg: 'var(--neo-bg)',
 					shadow: {
-						dark: '#d3d0e2',
-						light: '#ffffff'
+						dark: 'var(--neo-shadow-dark)',
+						light: 'var(--neo-shadow-light)'
 					},
 					primary: 'var(--neo-primary)',
 					secondary: 'var(--neo-secondary)',
 					accent: 'var(--neo-accent)',
 					text: {
-						primary: '#1A1F2C',
-						secondary: '#8E9196'
+						primary: 'var(--neo-text-primary)',
+						secondary: 'var(--neo-text-secondary)'
 					}
 				}
 			},
@@ -91,6 +91,7 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -125,5 +126,19 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		// Add a custom plugin to handle opacity modifiers for our neo-* custom properties
+		plugin(function({ addUtilities, theme, matchUtilities }) {
+			// Add a utility for ring color with neo-primary
+			matchUtilities(
+				{
+					'ring-neo-primary': (value) => ({
+						'--tw-ring-color': `var(--neo-primary)`
+					}),
+				},
+				{ values: { DEFAULT: '1' } }
+			);
+		})
+	],
 } satisfies Config;
