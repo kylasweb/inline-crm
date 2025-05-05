@@ -4,6 +4,8 @@ import { qualificationService } from './qualification/qualificationService';
 import { QualificationResult } from './qualification/qualificationTypes';
 import { assignmentService } from './assignment/assignmentService';
 import { AssignmentResult } from './assignment/assignmentTypes';
+import { enrichmentService } from './enrichment/enrichmentService';
+import { LeadEnrichmentData } from './enrichment/enrichmentTypes';
 
 // Existing interfaces
 export interface LeadStats {
@@ -68,7 +70,30 @@ export const leadService = {
   async createLead(leadData: LeadFormData): Promise<ApiResponse<Lead>> {
     const response = await postData<Lead>('/leads', leadData);
     if (response.success && response.data) {
-      // Calculate qualification score for new lead
+      // Start enrichment process
+      const enrichmentData = await enrichmentService.enrichLead(response.data);
+      
+      // Update lead with enriched data if available
+      if (enrichmentData.company || enrichmentData.contact) {
+        const enrichedLeadData: Partial<LeadFormData> = {};
+        
+        if (enrichmentData.company) {
+          enrichedLeadData.company = enrichmentData.company.name;
+        }
+        
+        if (enrichmentData.contact) {
+          if (enrichmentData.contact.email.valid) {
+            enrichedLeadData.email = response.data.email;
+          }
+          if (enrichmentData.contact.phone.valid) {
+            enrichedLeadData.phone = response.data.phone;
+          }
+        }
+        
+        await this.updateLead(response.data.id, enrichedLeadData);
+      }
+
+      // Calculate qualification score for enriched lead
       const qualificationResult = await qualificationService.calculateLeadScore(response.data);
       
       // Update lead with qualification data
@@ -89,6 +114,56 @@ export const leadService = {
       return response;
     }
     return response;
+  },
+
+  // Enrichment methods
+  async getLeadEnrichment(leadId: string): Promise<ApiResponse<LeadEnrichmentData>> {
+    try {
+      const leadResponse = await this.getLeadById(leadId);
+      if (!leadResponse.success || !leadResponse.data) {
+        return { success: false, error: 'Lead not found' };
+      }
+
+      const enrichmentData = await enrichmentService.enrichLead(leadResponse.data);
+      return { success: true, data: enrichmentData };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch enrichment data'
+      };
+    }
+  },
+
+  async refreshLeadEnrichment(leadId: string): Promise<ApiResponse<LeadEnrichmentData>> {
+    try {
+      const leadResponse = await this.getLeadById(leadId);
+      if (!leadResponse.success || !leadResponse.data) {
+        return { success: false, error: 'Lead not found' };
+      }
+
+      const enrichmentData = await enrichmentService.refreshEnrichment(leadResponse.data);
+      return { success: true, data: enrichmentData };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to refresh enrichment data'
+      };
+    }
+  },
+
+  async getEnrichmentStatus(leadId: string): Promise<ApiResponse<string>> {
+    try {
+      const status = await enrichmentService.getEnrichmentStatus(leadId);
+      return {
+        success: true,
+        data: status?.status || 'unknown'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get enrichment status'
+      };
+    }
   },
 
   // Update lead qualification data
