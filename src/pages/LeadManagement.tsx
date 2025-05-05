@@ -16,7 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistance } from 'date-fns';
-import { Doughnut, Line } from 'recharts';
+import { PieChart as ReChartsPieChart, Line } from 'recharts';
+
+// Define chart colors array
+const CHART_COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#D6BCFA', '#8B5CF6', '#D946EF'];
 
 const statusColorMap = {
   'New': 'primary',
@@ -183,6 +186,11 @@ const LeadManagement: React.FC = () => {
   const handleViewLead = (lead: Lead) => {
     setSelectedLead(lead);
     setIsViewDialogOpen(true);
+  };
+
+  // Helper function to get badge variant
+  const getBadgeVariant = (status: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' => {
+    return (statusColorMap[status as keyof typeof statusColorMap] || 'default') as 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
   };
 
   if (leadsLoading || statsLoading) {
@@ -365,7 +373,7 @@ const LeadManagement: React.FC = () => {
                       </td>
                       <td className="py-3">
                         <NeoBadge 
-                          variant={statusColorMap[lead.status as keyof typeof statusColorMap] || 'default'}
+                          variant={getBadgeVariant(lead.status)}
                           size="sm"
                         >
                           {lead.status}
@@ -457,7 +465,7 @@ const LeadManagement: React.FC = () => {
                                 className="h-2 rounded-full" 
                                 style={{ 
                                   width: `${(item.count / statsData.totalLeads) * 100}%`,
-                                  backgroundColor: COLORS[index % COLORS.length]
+                                  backgroundColor: CHART_COLORS[index % CHART_COLORS.length]
                                 }} 
                               />
                             </div>
@@ -652,7 +660,7 @@ const LeadManagement: React.FC = () => {
                       <p className="text-neo-text-secondary">{selectedLead.company}</p>
                     </div>
                     <NeoBadge 
-                      variant={statusColorMap[selectedLead.status as keyof typeof statusColorMap] || 'default'}
+                      variant={getBadgeVariant(selectedLead.status)}
                     >
                       {selectedLead.status}
                     </NeoBadge>
