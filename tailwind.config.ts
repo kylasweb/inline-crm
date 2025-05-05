@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,28 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Neomorphic specific colors
+				neo: {
+					bg: '#f1f0fb',
+					shadow: {
+						dark: '#d3d0e2',
+						light: '#ffffff'
+					},
+					primary: '#9b87f5',
+					secondary: '#7e69ab',
+					accent: '#6e59a5',
+					text: {
+						primary: '#1A1F2C',
+						secondary: '#8E9196'
+					}
 				}
+			},
+			boxShadow: {
+				'neo-flat': '3px 3px 6px #d3d0e2, -3px -3px 6px #ffffff',
+				'neo-pressed': 'inset 3px 3px 6px #d3d0e2, inset -3px -3px 6px #ffffff',
+				'neo-convex': '3px 3px 6px #d3d0e2, -3px -3px 6px #ffffff, inset 1px 1px 1px #ffffff, inset -1px -1px 1px #d3d0e2',
+				'neo-concave': '3px 3px 6px #d3d0e2, -3px -3px 6px #ffffff, inset 1px 1px 1px #d3d0e2, inset -1px -1px 1px #ffffff',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +106,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out'
 			}
 		}
 	},
