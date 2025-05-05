@@ -54,9 +54,38 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  const { summary, revenueStats, ticketStats, pipelineStats, recentActivity } = data;
+  // Safely destructure with default values
+  const {
+    summary = {
+      newLeads: 0,
+      openOpportunities: 0,
+      pendingTickets: 0,
+      upcomingRenewals: 0
+    },
+    revenueStats = {
+      thisMonth: 0,
+      lastMonth: 0,
+      forecast: 0,
+      quarterly: []
+    },
+    ticketStats = {
+      priorityDistribution: [],
+      responseTimeAvg: 0,
+      resolutionTimeAvg: 0
+    },
+    pipelineStats = {
+      stages: [],
+      winRate: 0,
+      averageDealSize: 0,
+      salesCycle: 0
+    },
+    recentActivity = []
+  } = data;
 
-  const percentChange = ((revenueStats.thisMonth - revenueStats.lastMonth) / revenueStats.lastMonth * 100).toFixed(1);
+  // Calculate percentage change safely
+  const percentChange = revenueStats.lastMonth !== 0
+    ? ((revenueStats.thisMonth - revenueStats.lastMonth) / revenueStats.lastMonth * 100).toFixed(1)
+    : '0.0';
   const isPositiveChange = revenueStats.thisMonth >= revenueStats.lastMonth;
 
   return (

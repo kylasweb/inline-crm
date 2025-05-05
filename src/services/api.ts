@@ -400,8 +400,55 @@ function mockSingleOpportunity(id: string): Opportunity {
 }
 
 function mockDashboardData(): DashboardData {
-  // Implementation remains the same...
-  return {} as DashboardData;
+  return {
+    summary: {
+      newLeads: Math.floor(Math.random() * 50) + 10,
+      openOpportunities: Math.floor(Math.random() * 30) + 5,
+      pendingTickets: Math.floor(Math.random() * 20) + 3,
+      upcomingRenewals: Math.floor(Math.random() * 15) + 2
+    },
+    revenueStats: {
+      thisMonth: Math.floor(Math.random() * 100000) + 50000,
+      lastMonth: Math.floor(Math.random() * 100000) + 50000,
+      forecast: Math.floor(Math.random() * 150000) + 75000,
+      quarterly: Array(6).fill(null).map((_, i) => ({
+        month: new Date(Date.now() - i * 30 * 24 * 60 * 60 * 1000).toLocaleString('default', { month: 'short' }),
+        revenue: Math.floor(Math.random() * 100000) + 50000
+      })).reverse()
+    },
+    ticketStats: {
+      open: Math.floor(Math.random() * 20) + 5,
+      inProgress: Math.floor(Math.random() * 15) + 3,
+      pendingCustomer: Math.floor(Math.random() * 10) + 2,
+      resolved: Math.floor(Math.random() * 50) + 20,
+      priorityDistribution: [
+        { priority: 'High', count: Math.floor(Math.random() * 10) + 5 },
+        { priority: 'Medium', count: Math.floor(Math.random() * 20) + 10 },
+        { priority: 'Low', count: Math.floor(Math.random() * 15) + 5 }
+      ],
+      responseTimeAvg: Math.floor(Math.random() * 24) + 1,
+      resolutionTimeAvg: Math.floor(Math.random() * 72) + 24
+    },
+    pipelineStats: {
+      stages: [
+        { stage: 'Qualification', count: Math.floor(Math.random() * 10) + 5, value: Math.floor(Math.random() * 200000) + 100000 },
+        { stage: 'Proposal', count: Math.floor(Math.random() * 8) + 3, value: Math.floor(Math.random() * 150000) + 75000 },
+        { stage: 'Negotiation', count: Math.floor(Math.random() * 5) + 2, value: Math.floor(Math.random() * 100000) + 50000 },
+        { stage: 'Closing', count: Math.floor(Math.random() * 3) + 1, value: Math.floor(Math.random() * 50000) + 25000 }
+      ],
+      winRate: Math.floor(Math.random() * 30) + 40,
+      averageDealSize: Math.floor(Math.random() * 50000) + 25000,
+      salesCycle: Math.floor(Math.random() * 30) + 45
+    },
+    recentActivity: Array(10).fill(null).map((_, i) => ({
+      id: i + 1,
+      type: ['lead', 'opportunity', 'ticket'][Math.floor(Math.random() * 3)],
+      action: ['created', 'updated', 'closed'][Math.floor(Math.random() * 3)],
+      subject: `Activity ${i + 1}`,
+      timestamp: new Date(Date.now() - Math.floor(Math.random() * 24 * 60 * 60 * 1000)).toISOString(),
+      user: ['John Doe', 'Jane Smith', 'Alex Johnson'][Math.floor(Math.random() * 3)]
+    }))
+  };
 }
 
 function mockQuotationData(endpoint: string): Quotation | Quotation[] {
