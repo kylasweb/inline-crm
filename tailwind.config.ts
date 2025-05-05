@@ -70,9 +70,9 @@ export default {
 						dark: '#d3d0e2',
 						light: '#ffffff'
 					},
-					primary: '#9b87f5',
-					secondary: '#7e69ab',
-					accent: '#6e59a5',
+					primary: 'var(--neo-primary)',
+					secondary: 'var(--neo-secondary)',
+					accent: 'var(--neo-accent)',
 					text: {
 						primary: '#1A1F2C',
 						secondary: '#8E9196'

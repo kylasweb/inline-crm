@@ -8,13 +8,14 @@ import {
   Shield, Book, Presentation, Package, 
   Handshake, BarChart2, Link, Flag, GraduationCap
 } from 'lucide-react';
+import { useSiteContext } from '@/contexts/SiteContext';
 
 // Define all menu items with their sub-items
 const menuItems = [
   { 
     name: 'Dashboard', 
     icon: LayoutDashboard, 
-    path: '/', 
+    path: '/dashboard', 
     subItems: []
   },
   { 
@@ -191,6 +192,7 @@ const menuItems = [
 
 const Sidebar: React.FC<{ isMobile: boolean; toggleSidebar: () => void }> = ({ isMobile, toggleSidebar }) => {
   const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
+  const { siteName } = useSiteContext();
 
   const toggleExpand = (itemName: string) => {
     setExpandedItems(prev => 
@@ -203,7 +205,7 @@ const Sidebar: React.FC<{ isMobile: boolean; toggleSidebar: () => void }> = ({ i
   return (
     <aside className={`${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : 'relative'} w-64 h-full overflow-y-auto neo-flat p-4`}>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-xl font-bold text-neo-primary">Inline SysCRM</h1>
+        <h1 className="text-xl font-bold text-neo-primary">{siteName}</h1>
         {isMobile && (
           <button onClick={toggleSidebar} className="neo-button p-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-6 w-6">

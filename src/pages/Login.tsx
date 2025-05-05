@@ -4,170 +4,164 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/components/ui/use-toast';
+import { useSiteContext } from '@/contexts/SiteContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
+  const { siteName } = useSiteContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false,
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Mock login - in a real app, this would call an API
+
+    // For demo purposes, add a slight delay and then navigate to dashboard
+    // In a real app, you'd authenticate with an API
     setTimeout(() => {
-      if (email === 'demo@example.com' && password === 'password123') {
-        toast.success('Login successful!');
-        navigate('/');
+      if (formData.email === 'demo@example.com' && formData.password === 'password123') {
+        // Success login case
+        setIsLoading(false);
+        toast({
+          title: "Login Successful",
+          description: "Welcome to the dashboard!",
+        });
+        navigate('/dashboard');
       } else {
-        toast.error('Invalid credentials. Please try again.');
+        // Error login case
+        setIsLoading(false);
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password. Try demo@example.com / password123.",
+          variant: "destructive",
+        });
       }
-      setIsLoading(false);
     }, 1500);
   };
 
-  const handleDemoLogin = () => {
-    setEmail('demo@example.com');
-    setPassword('password123');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-neo-bg">
-      {/* Header */}
-      <header className="neo-flat px-6 py-4">
-        <div className="flex items-center space-x-4">
-          <div 
-            className="neo-convex h-12 w-12 rounded-full flex items-center justify-center cursor-pointer"
-            onClick={() => navigate('/')}
-          >
-            <span className="text-neo-primary text-xl font-bold">N</span>
-          </div>
-          <h1 
-            className="text-2xl font-bold text-neo-text-primary cursor-pointer"
-            onClick={() => navigate('/')}
-          >
-            NeoLytic CRM
-          </h1>
-        </div>
-      </header>
-
-      <main className="flex-1 flex items-center justify-center px-6 py-12 animate-fade-in">
-        <div className="w-full max-w-md">
-          <div className="neo-flat p-8 rounded-xl">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-neo-text-primary mb-2">Welcome Back</h2>
-              <p className="text-neo-text-secondary">Sign in to access your dashboard</p>
+    <div className="min-h-screen flex flex-col justify-center bg-neo-bg p-6">
+      <div className="neo-flat p-8 rounded-xl max-w-md mx-auto w-full">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="neo-convex h-16 w-16 rounded-full flex items-center justify-center">
+              <span className="text-neo-primary text-3xl font-bold">N</span>
             </div>
+          </div>
+          <h1 className="text-2xl font-bold text-neo-text-primary mb-1">{siteName}</h1>
+          <p className="text-neo-text-secondary">Log in to access your dashboard</p>
+        </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-neo-text-secondary" />
-                  </div>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john.doe@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="neo-input pl-10"
-                    required
-                  />
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="neo-input"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-xs text-neo-primary hover:text-neo-primary/80 -mr-2"
-                    onClick={() => toast.info('Password reset functionality is not available in this demo.')}
-                  >
-                    Forgot password?
-                  </Button>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-neo-text-secondary" />
-                  </div>
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="neo-input pl-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-neo-text-secondary hover:text-neo-text-primary"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-neo-primary hover:bg-neo-primary/90 text-white"
-                disabled={isLoading}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <a 
+                href="#" 
+                className="text-sm text-neo-primary hover:text-neo-secondary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toast({
+                    title: "Reset Password",
+                    description: "For this demo, use: demo@example.com / password123",
+                  });
+                }}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </form>
+                Forgot password?
+              </a>
+            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className="neo-input"
+              value={formData.password}
+              onChange={handleChange}
+            />
+          </div>
 
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-neo-shadow-dark"></div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+              className="neo-pressed h-4 w-4 rounded"
+            />
+            <Label htmlFor="rememberMe" className="text-sm">Remember me</Label>
+          </div>
+
+          <div className="mt-6">
+            <Button
+              type="submit"
+              className="w-full neo-button bg-neo-primary text-white hover:bg-neo-primary/90 transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
+                  <span>Logging in...</span>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-neo-bg text-neo-text-secondary">
-                    Demo Credentials
-                  </span>
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <div className="text-sm text-neo-text-secondary">
+              <span className="block mb-2">Test credentials for demo:</span>
+              <div className="neo-flat p-3 rounded-lg text-left space-y-2">
+                <div className="flex justify-between">
+                  <span>Email:</span>
+                  <span className="font-medium">demo@example.com</span>
                 </div>
-              </div>
-              
-              <div className="mt-4 p-4 neo-pressed rounded-lg">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="font-medium">Email:</p>
-                    <p className="text-neo-text-secondary">demo@example.com</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Password:</p>
-                    <p className="text-neo-text-secondary">password123</p>
-                  </div>
+                <div className="flex justify-between">
+                  <span>Password:</span>
+                  <span className="font-medium">password123</span>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  className="w-full mt-4 neo-button bg-neo-bg hover:bg-neo-bg"
-                  onClick={handleDemoLogin}
-                >
-                  Auto-fill Demo Credentials
-                </Button>
               </div>
             </div>
           </div>
+        </form>
+
+        <div className="mt-8 text-center">
+          <a href="/" className="text-neo-primary hover:text-neo-secondary">
+            ← Back to Home
+          </a>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

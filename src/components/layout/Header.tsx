@@ -2,12 +2,15 @@
 import React from 'react';
 import { Bell, Search, User, Menu } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSiteContext } from '@/contexts/SiteContext';
 
 interface HeaderProps {
   toggleSidebar: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
+  const { siteName } = useSiteContext();
+  
   return (
     <header className="neo-flat px-4 py-3 flex items-center justify-between">
       <div className="flex items-center">
@@ -27,6 +30,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           />
         </div>
       </div>
+      
+      <div className="hidden md:block text-lg font-bold text-neo-primary">{siteName}</div>
       
       <div className="flex items-center space-x-4">
         <TooltipProvider>

@@ -43,6 +43,19 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Neomorphic colors with CSS variables for dynamic updates */
+    --primary-color: #9b87f5;
+    --secondary-color: #7e69ab;
+    --accent-color: #6e59a5;
+    --neo-primary: var(--primary-color);
+    --neo-secondary: var(--secondary-color);
+    --neo-accent: var(--accent-color);
+    --neo-bg: #f1f0fb;
+    --neo-shadow-dark: #d3d0e2;
+    --neo-shadow-light: #ffffff;
+    --neo-text-primary: #1A1F2C;
+    --neo-text-secondary: #8E9196;
   }
 
   .dark {
