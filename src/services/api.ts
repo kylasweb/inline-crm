@@ -147,41 +147,35 @@ export async function fetchData<T>(endpoint: string): Promise<ApiResponse<T>> {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     // Mock data patterns based on endpoint
-    if (endpoint.includes('/leads')) {
+    // Strip leading slash for consistent matching
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    
+    // Map endpoints to their mock data generators
+    const mockDataMap: Record<string, () => any> = {
+      'leads': () => mockLeadData(endpoint),
+      'accounts': () => mockAccountData(endpoint),
+      'opportunities': () => mockOpportunityData(endpoint),
+      'quotations': () => mockQuotationData(endpoint),
+      'dashboard': () => mockDashboardData(),
+      'lead-config': () => mockLeadConfigData(endpoint),
+      'tickets': () => mockTicketData(endpoint) // Add support for tickets
+    };
+    
+    // Find matching endpoint
+    const matchingEndpoint = Object.keys(mockDataMap).find(key =>
+      cleanEndpoint.startsWith(key)
+    );
+
+    if (matchingEndpoint) {
       return {
         success: true,
-        data: mockLeadData(endpoint) as T
-      };
-    } else if (endpoint.includes('/accounts')) {
-      return {
-        success: true,
-        data: mockAccountData(endpoint) as T
-      };
-    } else if (endpoint.includes('/opportunities')) {
-      return {
-        success: true,
-        data: mockOpportunityData(endpoint) as T
-      };
-    } else if (endpoint.includes('/quotations')) {
-      return {
-        success: true,
-        data: mockQuotationData(endpoint) as T
-      };
-    } else if (endpoint.includes('/dashboard')) {
-      return {
-        success: true,
-        data: mockDashboardData() as T
-      };
-    } else if (endpoint.includes('/lead-config')) {
-      return {
-        success: true,
-        data: mockLeadConfigData(endpoint) as T
+        data: mockDataMap[matchingEndpoint]() as T
       };
     }
     
     return {
       success: false,
-      error: 'Endpoint not implemented in mock API'
+      error: `Endpoint "${endpoint}" not implemented in mock API`
     };
   } catch (error) {
     return {
@@ -269,6 +263,71 @@ export async function deleteData(endpoint: string): Promise<ApiResponse<void>> {
 function mockLeadData(endpoint: string): Lead[] | LeadStats | number {
   // Existing mockLeadData implementation...
   return [];
+}
+
+function mockTicketData(endpoint: string): any {
+  const statuses = ['Open', 'In Progress', 'Resolved', 'Closed', 'Pending'];
+  const priorities = ['Critical', 'High', 'Medium', 'Low'];
+  const types = ['Bug', 'Feature', 'Support', 'Question', 'Other'];
+  const channels = ['Email', 'Phone', 'Web', 'Chat'];
+
+  if (endpoint.includes('/stats')) {
+    return {
+      openTickets: Math.floor(Math.random() * 50) + 20,
+      totalTickets: Math.floor(Math.random() * 200) + 100,
+      avgResponseTime: Math.floor(Math.random() * 24) + 1,
+      avgResolutionTime: Math.floor(Math.random() * 72) + 24,
+      slaBreachRate: Math.floor(Math.random() * 20) + 5,
+      ticketsByPriority: priorities.map(priority => ({
+        priority,
+        count: Math.floor(Math.random() * 30) + 5
+      })),
+      ticketsByStatus: statuses.map(status => ({
+        status,
+        count: Math.floor(Math.random() * 40) + 10
+      })),
+      ticketTrend: Array(7).fill(null).map((_, i) => ({
+        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        opened: Math.floor(Math.random() * 20) + 5,
+        closed: Math.floor(Math.random() * 15) + 5
+      })),
+      topClients: Array(5).fill(null).map((_, i) => ({
+        client: `Client ${i + 1}`,
+        count: Math.floor(Math.random() * 50) + 10
+      })),
+      topCategories: types.map(category => ({
+        category,
+        count: Math.floor(Math.random() * 40) + 10
+      }))
+    };
+  }
+
+  // Generate list of tickets
+  return Array(40).fill(null).map((_, i) => ({
+    id: `TKT-${String(i + 1).padStart(5, '0')}`,
+    subject: `Sample Ticket ${i + 1}`,
+    description: `This is a detailed description for ticket ${i + 1}...`,
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    priority: priorities[Math.floor(Math.random() * priorities.length)],
+    type: types[Math.floor(Math.random() * types.length)],
+    client: `Client ${Math.floor(Math.random() * 20) + 1}`,
+    assignee: Math.random() > 0.3 ? `Agent ${Math.floor(Math.random() * 5) + 1}` : null,
+    createdAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - Math.floor(Math.random() * 5) * 24 * 60 * 60 * 1000).toISOString(),
+    dueDate: Math.random() > 0.5 ? new Date(Date.now() + Math.floor(Math.random() * 14) * 24 * 60 * 60 * 1000).toISOString() : null,
+    tags: ['ticket', types[Math.floor(Math.random() * types.length)].toLowerCase()],
+    channel: channels[Math.floor(Math.random() * channels.length)],
+    sla: {
+      responseTime: Math.floor(Math.random() * 24) + 1,
+      resolutionTime: Math.floor(Math.random() * 72) + 24,
+      breached: Math.random() > 0.8
+    },
+    comments: Array(Math.floor(Math.random() * 5)).fill(null).map((_, j) => ({
+      author: `User ${Math.floor(Math.random() * 5) + 1}`,
+      content: `Comment ${j + 1} on this ticket...`,
+      timestamp: new Date(Date.now() - Math.floor(Math.random() * 24) * 60 * 60 * 1000).toISOString()
+    }))
+  }));
 }
 
 function mockOpportunityData(endpoint: string): Opportunity | Opportunity[] | any {

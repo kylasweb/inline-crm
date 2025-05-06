@@ -10,11 +10,13 @@ import QuotationFormDialog from '@/components/quotations/QuotationFormDialog';
 export function Quotations() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchQuotations = async () => {
+    setIsFetching(true);
     try {
       const response = await quotationService.getAll();
       if (response.success && response.data) {
@@ -32,6 +34,8 @@ export function Quotations() {
         title: 'Error',
         description: 'An unexpected error occurred',
       });
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -122,6 +126,17 @@ export function Quotations() {
     }
   };
 
+  if (isFetching) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="neo-flat h-24 w-24 rounded-full flex items-center justify-center">
+          <div className="h-12 w-12 border-4 border-neo-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <p className="mt-4 text-neo-text-secondary">Loading quotations...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -132,11 +147,20 @@ export function Quotations() {
         </Button>
       </div>
 
-      <QuotationList
-        quotations={quotations}
-        onEdit={handleEdit}
-        onStatusChange={handleStatusChange}
-      />
+      {quotations.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-neo-text-secondary">No quotations found.</p>
+          <Button className="mt-4" onClick={() => setDialogOpen(true)}>
+            Create your first quotation
+          </Button>
+        </div>
+      ) : (
+        <QuotationList
+          quotations={quotations}
+          onEdit={handleEdit}
+          onStatusChange={handleStatusChange}
+        />
+      )}
 
       <QuotationFormDialog
         open={dialogOpen}

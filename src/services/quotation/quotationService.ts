@@ -5,11 +5,22 @@ const BASE_URL = '/quotations';
 
 export const quotationService = {
   async getAll(): Promise<ApiResponse<Quotation[]>> {
-    return fetchData<Quotation[]>(BASE_URL);
+    const response = await fetchData<Quotation[]>(BASE_URL);
+    return {
+      ...response,
+      data: response.data || []
+    };
   },
 
   async getById(id: string): Promise<ApiResponse<Quotation>> {
-    return fetchData<Quotation>(`${BASE_URL}/${id}`);
+    const response = await fetchData<Quotation>(`${BASE_URL}/${id}`);
+    if (!response.data) {
+      return {
+        success: false,
+        error: 'Quotation not found'
+      };
+    }
+    return response;
   },
 
   async create(data: CreateQuotationDTO): Promise<ApiResponse<Quotation>> {
@@ -64,23 +75,58 @@ export const quotationService = {
       };
     }
 
-    return updateData<Quotation>(`${BASE_URL}/${id}`, quotationUpdate);
+    const response = await updateData<Quotation>(`${BASE_URL}/${id}`, quotationUpdate);
+    if (!response.data) {
+      return {
+        success: false,
+        error: 'Failed to update quotation'
+      };
+    }
+    return response;
   },
 
   async delete(id: string): Promise<ApiResponse<void>> {
-    return deleteData(`${BASE_URL}/${id}`);
+    const response = await deleteData(`${BASE_URL}/${id}`);
+    if (!response.success) {
+      return {
+        success: false,
+        error: 'Failed to delete quotation'
+      };
+    }
+    return response;
   },
 
   async send(id: string): Promise<ApiResponse<Quotation>> {
-    return updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'sent' });
+    const response = await updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'sent' });
+    if (!response.data) {
+      return {
+        success: false,
+        error: 'Failed to send quotation'
+      };
+    }
+    return response;
   },
 
   async accept(id: string): Promise<ApiResponse<Quotation>> {
-    return updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'accepted' });
+    const response = await updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'accepted' });
+    if (!response.data) {
+      return {
+        success: false,
+        error: 'Failed to accept quotation'
+      };
+    }
+    return response;
   },
 
   async reject(id: string): Promise<ApiResponse<Quotation>> {
-    return updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'rejected' });
+    const response = await updateData<Quotation>(`${BASE_URL}/${id}`, { status: 'rejected' });
+    if (!response.data) {
+      return {
+        success: false,
+        error: 'Failed to reject quotation'
+      };
+    }
+    return response;
   }
 };
 

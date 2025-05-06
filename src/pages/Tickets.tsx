@@ -20,29 +20,31 @@ import { Textarea } from '@/components/ui/textarea';
 // Define chart colors
 const CHART_COLORS = ['#9b87f5', '#7E69AB', '#6E59A5', '#D6BCFA', '#8B5CF6', '#D946EF', '#F97316', '#0EA5E9'];
 
-// API endpoints for Tickets
+// API calls using our mock API service
+import { fetchData, postData } from '@/services/api';
+
 const fetchTickets = async (): Promise<Ticket[]> => {
-  const response = await fetch('https://api.mockaroo.com/api/ff7edb10?count=40&key=e7c3d5c0');
-  if (!response.ok) throw new Error('Failed to fetch tickets');
-  return response.json();
+  const response = await fetchData<Ticket[]>('/tickets');
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to fetch tickets');
+  }
+  return response.data!;
 };
 
 const fetchTicketStats = async (): Promise<TicketStats> => {
-  const response = await fetch('https://api.mockaroo.com/api/b6fc9f50?key=e7c3d5c0');
-  if (!response.ok) throw new Error('Failed to fetch ticket statistics');
-  return response.json();
+  const response = await fetchData<TicketStats>('/tickets/stats');
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to fetch ticket statistics');
+  }
+  return response.data!;
 };
 
 const createTicket = async (ticket: Partial<Ticket>): Promise<Ticket> => {
-  const response = await fetch('https://api.mockaroo.com/api/ff7edb10?key=e7c3d5c0', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(ticket),
-  });
-  if (!response.ok) throw new Error('Failed to create ticket');
-  return response.json();
+  const response = await postData<Ticket>('/tickets', ticket);
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to create ticket');
+  }
+  return response.data!;
 };
 
 // Types
