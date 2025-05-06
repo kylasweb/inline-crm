@@ -7,7 +7,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { LeadFormData } from '@/services/leadService';
+import { Lead, LeadFormData } from '@/stores/leads.store';
+import { useCreateLead, useUpdateLead } from '@/stores/leads.store';
 
 const leadFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -20,12 +21,16 @@ const leadFormSchema = z.object({
 });
 
 export interface LeadFormProps {
-  onSubmit: (data: LeadFormData) => void;
-  initialData?: Partial<LeadFormData>;
-  isSubmitting?: boolean;
+  id?: string;
+  initialData?: Partial<Lead>;
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
 }
 
-const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, initialData, isSubmitting = false }) => {
+const LeadForm: React.FC<LeadFormProps> = ({ id, initialData, onSuccess, onError }) => {
+  const createLead = useCreateLead();
+  const updateLead = useUpdateLead();
+  const isSubmitting = createLead.isPending || updateLead.isPending;
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadFormSchema),
     defaultValues: {
@@ -41,7 +46,18 @@ const LeadForm: React.FC<LeadFormProps> = ({ onSubmit, initialData, isSubmitting
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(async (data) => {
+        try {
+          if (id) {
+            await updateLead.mutateAsync({ id, data });
+          } else {
+            await createLead.mutateAsync(data);
+          }
+          onSuccess?.();
+        } catch (error) {
+          onError?.(error instanceof Error ? error : new Error('An unexpected error occurred'));
+        }
+      })} className="space-y-4">
         <FormField
           control={form.control}
           name="name"

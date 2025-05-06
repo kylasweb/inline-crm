@@ -1,47 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { quotationService } from '@/services/quotation/quotationService';
 import { Quotation, CreateQuotationDTO } from '@/services/quotation/quotationTypes';
 import QuotationList from '@/components/quotations/QuotationList';
 import QuotationFormDialog from '@/components/quotations/QuotationFormDialog';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import NeoCard from '@/components/ui/neo-card';
 
 export function Quotations() {
-  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const fetchQuotations = async () => {
-    setIsFetching(true);
-    try {
+  const { data: quotationsData, isLoading: isFetching, error } = useQuery({
+    queryKey: ['quotations'],
+    queryFn: async () => {
       const response = await quotationService.getAll();
       if (response.success && response.data) {
-        setQuotations(response.data);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: response.error || 'Failed to fetch quotations',
-        });
+        return response.data;
       }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'An unexpected error occurred',
-      });
-    } finally {
-      setIsFetching(false);
+      throw new Error(response.error || 'Failed to fetch quotations');
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchQuotations();
-  }, []);
+  const quotations = quotationsData || [];
 
   const handleCreateOrUpdate = async (data: CreateQuotationDTO) => {
     setIsLoading(true);
@@ -61,7 +47,7 @@ export function Quotations() {
             : 'Quotation created successfully',
         });
         setDialogOpen(false);
-        fetchQuotations();
+        queryClient.invalidateQueries({ queryKey: ['quotations'] });
       } else {
         toast({
           variant: 'destructive',
@@ -102,7 +88,7 @@ export function Quotations() {
           title: 'Success',
           description: `Quotation status updated to ${status}`,
         });
-        fetchQuotations();
+        queryClient.invalidateQueries({ queryKey: ['quotations'] });
       } else {
         toast({
           variant: 'destructive',
@@ -126,13 +112,34 @@ export function Quotations() {
     }
   };
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh]">
+        <NeoCard className="p-6 text-center max-w-md">
+          <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
+          <p className="text-neo-text-secondary mb-4">
+            Failed to load quotations data. Please try again.
+          </p>
+          <Button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['quotations'] });
+            }}
+            className="neo-button"
+          >
+            Retry
+          </Button>
+        </NeoCard>
+      </div>
+    );
+  }
+
   if (isFetching) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center h-[70vh]">
         <div className="neo-flat h-24 w-24 rounded-full flex items-center justify-center">
           <div className="h-12 w-12 border-4 border-neo-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
-        <p className="mt-4 text-neo-text-secondary">Loading quotations...</p>
+        <p className="mt-4 text-neo-primary">Loading quotations...</p>
       </div>
     );
   }
@@ -149,10 +156,15 @@ export function Quotations() {
 
       {quotations.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-neo-text-secondary">No quotations found.</p>
-          <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-            Create your first quotation
-          </Button>
+          <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+            <FileText className="h-12 w-12 mb-2 opacity-50" />
+            <p>No quotations found</p>
+            <p className="text-sm mb-4">Create your first quotation to get started</p>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Quotation
+            </Button>
+          </div>
         </div>
       ) : (
         <QuotationList

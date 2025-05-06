@@ -147,12 +147,20 @@ const Tickets: React.FC = () => {
   
   const queryClient = useQueryClient();
   
-  const { data: tickets, isLoading: ticketsLoading } = useQuery({
+  const {
+    data: tickets,
+    isLoading: ticketsLoading,
+    error: ticketsError
+  } = useQuery({
     queryKey: ['tickets'],
     queryFn: fetchTickets
   });
   
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError
+  } = useQuery({
     queryKey: ['ticketStats'],
     queryFn: fetchTicketStats
   });
@@ -223,6 +231,28 @@ const Tickets: React.FC = () => {
     return isBreach ? "destructive" : "default";
   }
   
+  if (ticketsError || statsError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh]">
+        <NeoCard className="p-6 text-center max-w-md">
+          <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
+          <p className="text-neo-text-secondary mb-4">
+            {ticketsError ? 'Failed to load tickets.' : 'Failed to load ticket statistics.'}
+          </p>
+          <Button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['tickets'] });
+              queryClient.invalidateQueries({ queryKey: ['ticketStats'] });
+            }}
+            className="neo-button"
+          >
+            Retry
+          </Button>
+        </NeoCard>
+      </div>
+    );
+  }
+
   if (ticketsLoading || statsLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh]">
@@ -423,11 +453,31 @@ const Tickets: React.FC = () => {
               </tbody>
             </table>
             
-            {filteredTickets?.length === 0 && (
-              <div className="py-8 text-center text-neo-text-secondary">
-                <p>No tickets match your filters</p>
-              </div>
-            )}
+            {(!tickets || tickets.length === 0) ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+                    <Filter className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No tickets found</p>
+                    <p className="text-sm mb-4">Get started by creating your first ticket</p>
+                    <Button onClick={() => setIsCreateDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Ticket
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredTickets?.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+                    <Filter className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No tickets match your filters</p>
+                    <p className="text-sm">Try adjusting your search criteria</p>
+                  </div>
+                </td>
+              </tr>
+            ) : null}
           </div>
         </TabsContent>
         

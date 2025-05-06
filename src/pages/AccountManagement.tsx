@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { accountService } from '@/services/account/accountService';
 import { Account } from '@/services/account/accountTypes';
 import { Button } from '@/components/ui/button';
@@ -26,13 +26,14 @@ interface AccountManagementProps {
 }
 
 const AccountManagement: React.FC<AccountManagementProps> = ({ filter, activeTab = "list" }) => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [industryFilter, setIndustryFilter] = useState<string>('All Industries');
   const [typeFilter, setTypeFilter] = useState<Account['type'] | 'All Types'>('All Types');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
-  const { data: accountsData, isLoading } = useQuery({
+  const { data: accountsData, isLoading, error } = useQuery({
     queryKey: ['accounts', searchQuery, industryFilter, typeFilter],
     queryFn: () => accountService.getAccounts({
       search: searchQuery,
@@ -50,6 +51,27 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ filter, activeTab
     setSelectedAccount(account);
     setIsFormOpen(true);
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh]">
+        <NeoCard className="p-6 text-center max-w-md">
+          <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
+          <p className="text-neo-text-secondary mb-4">
+            Failed to load account data. Please try again.
+          </p>
+          <Button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['accounts'] });
+            }}
+            className="neo-button"
+          >
+            Retry
+          </Button>
+        </NeoCard>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -179,7 +201,18 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ filter, activeTab
             </tr>
           </thead>
           <tbody>
-            {accounts.map((account) => (
+            {accounts.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-8">
+                  <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+                    <FileText className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No accounts found</p>
+                    <p className="text-sm">Try adjusting your filters or add a new account</p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              accounts.map((account) => (
               <tr 
                 key={account.id} 
                 className="border-b border-neo-border hover:bg-neo-bg/50 cursor-pointer"
@@ -203,7 +236,7 @@ const AccountManagement: React.FC<AccountManagementProps> = ({ filter, activeTab
                   {account.addresses.find(a => a.isPrimary)?.city || '-'}
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

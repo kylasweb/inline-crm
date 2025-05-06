@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
   Tooltip as RechartsTooltip, Legend, BarChart, Bar, XAxis, YAxis 
@@ -56,6 +56,7 @@ function mapOpportunityToDTO(opportunity: Opportunity): Partial<CreateOpportunit
 }
 
 const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, activeTab = "list" }) => {
+  const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
@@ -66,7 +67,7 @@ const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, a
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
 
-  const { data: opportunities, isLoading } = useQuery({
+  const { data: opportunities, isLoading, error } = useQuery({
     queryKey: ['opportunities', dateRange, searchQuery, stage, status, filter, activeTab],
     queryFn: () => fetchOpportunities({
       dateRange: {
@@ -87,6 +88,27 @@ const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, a
     setSelectedOpportunity(opportunity);
     setIsFormOpen(true);
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh]">
+        <NeoCard className="p-6 text-center max-w-md">
+          <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
+          <p className="text-neo-text-secondary mb-4">
+            Failed to load opportunities data. Please try again.
+          </p>
+          <Button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+            }}
+            className="neo-button"
+          >
+            Retry
+          </Button>
+        </NeoCard>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -242,7 +264,22 @@ const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, a
             </tr>
           </thead>
           <tbody>
-            {opportunities?.map((opportunity) => (
+            {!opportunities?.length ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+                    <FileText className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No opportunities found</p>
+                    <p className="text-sm mb-4">Try adjusting your filters or add a new opportunity</p>
+                    <Button onClick={handleCreateOpportunity}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Opportunity
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              opportunities.map((opportunity) => (
               <tr 
                 key={opportunity.id} 
                 className="border-b border-neo-border hover:bg-neo-bg/50 cursor-pointer"
@@ -267,7 +304,7 @@ const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, a
                   </NeoBadge>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

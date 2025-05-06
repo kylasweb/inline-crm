@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useLeadsStore } from '@/stores/leads.store';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -29,7 +30,7 @@ interface LeadManagementProps {
 type DateRange = ReactDayPickerDateRange;
 
 const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "list" }) => {
-  const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
+  const { setCreateDialogOpen } = useLeadsStore();
   const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
@@ -44,15 +45,37 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
     queryClient.invalidateQueries({ queryKey: ['leadStats'] });
   }, [queryClient]);
 
-  const { data: leads, isLoading: leadsLoading } = useQuery({
+  const { data: leads, isLoading: leadsLoading, error: leadsError } = useQuery({
     queryKey: ['leads', dateRange, searchQuery, leadSource, leadStatus, filter, activeTab],
     queryFn: () => fetchLeads(dateRange, searchQuery, leadSource, leadStatus),
   });
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ['leadStats', dateRange],
     queryFn: () => fetchLeadStats(dateRange),
   });
+
+  if (leadsError || statsError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[70vh]">
+        <NeoCard className="p-6 text-center max-w-md">
+          <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
+          <p className="text-neo-text-secondary mb-4">
+            {leadsError ? 'Failed to load leads data.' : 'Failed to load statistics data.'}
+          </p>
+          <Button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['leads'] });
+              queryClient.invalidateQueries({ queryKey: ['leadStats'] });
+            }}
+            className="neo-button"
+          >
+            Retry
+          </Button>
+        </NeoCard>
+      </div>
+    );
+  }
 
   if (leadsLoading || statsLoading) {
     return (
@@ -73,7 +96,7 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
           <p className="text-neo-text-secondary">Track and manage incoming leads</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button className="neo-button" onClick={() => setIsAddLeadOpen(true)}>
+          <Button className="neo-button" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Lead
           </Button>
@@ -205,18 +228,30 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
                 </tr>
               </thead>
               <tbody>
-                {leads?.map((lead) => (
-                  <tr key={lead.id} className="border-b border-neo-border hover:bg-neo-bg/50">
-                    <td className="py-3 px-4">{lead.name}</td>
-                    <td className="py-3 px-4">{lead.email}</td>
-                    <td className="py-3 px-4">{lead.phone}</td>
-                    <td className="py-3 px-4">{lead.source}</td>
-                    <td className="py-3 px-4">
-                      <NeoBadge variant="primary">{lead.status}</NeoBadge>
+                {leads?.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center justify-center text-neo-text-secondary">
+                        <FileText className="h-12 w-12 mb-2 opacity-50" />
+                        <p>No leads found</p>
+                        <p className="text-sm">Try adjusting your filters or add a new lead</p>
+                      </div>
                     </td>
-                    <td className="py-3 px-4">{format(new Date(lead.createdAt), 'MMM dd, yyyy')}</td>
                   </tr>
-                ))}
+                ) : (
+                  leads?.map((lead) => (
+                    <tr key={lead.id} className="border-b border-neo-border hover:bg-neo-bg/50">
+                      <td className="py-3 px-4">{lead.name}</td>
+                      <td className="py-3 px-4">{lead.email}</td>
+                      <td className="py-3 px-4">{lead.phone}</td>
+                      <td className="py-3 px-4">{lead.source}</td>
+                      <td className="py-3 px-4">
+                        <NeoBadge variant="primary">{lead.status}</NeoBadge>
+                      </td>
+                      <td className="py-3 px-4">{format(new Date(lead.createdAt), 'MMM dd, yyyy')}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -227,40 +262,54 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
             <NeoCard className="p-6">
               <h3 className="font-medium mb-4">Lead Distribution by Source</h3>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={stats?.leadsBySource}
-                      dataKey="count"
-                      nameKey="source"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={(entry) => entry.source}
-                    >
-                      {stats?.leadsBySource.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {(!stats?.leadsBySource || stats.leadsBySource.length === 0) ? (
+                  <div className="h-full flex flex-col items-center justify-center text-neo-text-secondary">
+                    <PieChart className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No source distribution data available</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.leadsBySource}
+                        dataKey="count"
+                        nameKey="source"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label={(entry) => entry.source}
+                      >
+                        {stats.leadsBySource.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </NeoCard>
 
             <NeoCard className="p-6">
               <h3 className="font-medium mb-4">Lead Trend Over Time</h3>
               <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stats?.leadTrend}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Legend />
-                    <Bar dataKey="leads" fill="#8884d8" name="New Leads" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {(!stats?.leadTrend || stats.leadTrend.length === 0) ? (
+                  <div className="h-full flex flex-col items-center justify-center text-neo-text-secondary">
+                    <BarChart className="h-12 w-12 mb-2 opacity-50" />
+                    <p>No trend data available</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats.leadTrend}>
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Legend />
+                      <Bar dataKey="count" fill="#8884d8" name="New Leads" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </NeoCard>
           </div>
@@ -287,11 +336,7 @@ const LeadManagement: React.FC<LeadManagementProps> = ({ filter, activeTab = "li
         </TabsContent>
       </Tabs>
 
-      <LeadFormDialog 
-        isOpen={isAddLeadOpen}
-        onClose={() => setIsAddLeadOpen(false)}
-        onSuccess={handleLeadSuccess}
-      />
+      <LeadFormDialog />
     </div>
   );
 };

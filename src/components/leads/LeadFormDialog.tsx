@@ -2,54 +2,38 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import LeadForm from './LeadForm';
-import { LeadFormData, leadService } from '@/services/leadService';
+import { useLeadsStore } from '@/stores/leads.store';
 
-interface LeadFormDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-const LeadFormDialog: React.FC<LeadFormDialogProps> = ({ isOpen, onClose, onSuccess }) => {
+const LeadFormDialog: React.FC = () => {
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const { isCreateDialogOpen, setCreateDialogOpen } = useLeadsStore();
 
-  const handleSubmit = async (data: LeadFormData) => {
-    setIsSubmitting(true);
-    try {
-      const response = await leadService.createLead(data);
-      if (response.success) {
-        toast({
-          title: "Success",
-          description: "Lead created successfully",
-        });
-        onSuccess?.();
-        onClose();
-      } else {
-        toast({
-          title: "Error",
-          description: response.error || "Failed to create lead",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSuccess = () => {
+    toast({
+      title: "Success",
+      description: "Lead created successfully",
+    });
+    setCreateDialogOpen(false);
+  };
+
+  const handleError = (error: Error) => {
+    toast({
+      title: "Error",
+      description: error.message || "An unexpected error occurred",
+      variant: "destructive",
+    });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Lead</DialogTitle>
         </DialogHeader>
-        <LeadForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <LeadForm
+          onSuccess={handleSuccess}
+          onError={handleError}
+        />
       </DialogContent>
     </Dialog>
   );

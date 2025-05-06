@@ -7,6 +7,24 @@ export interface ApiResponse<T> {
 
 // ================ Interfaces ================
 
+export interface LeadStats {
+  newLeads: number;
+  qualifiedLeads: number;
+  leadTrend: Array<{
+    date: string;
+    count: number;
+  }>;
+  leadsBySource: Array<{
+    source: string;
+    count: number;
+  }>;
+  leadsByStatus: Array<{
+    status: string;
+    count: number;
+  }>;
+  conversionRate: number;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -260,9 +278,47 @@ export async function deleteData(endpoint: string): Promise<ApiResponse<void>> {
 
 // ================ Mock Data Generators ================
 
-function mockLeadData(endpoint: string): Lead[] | LeadStats | number {
-  // Existing mockLeadData implementation...
-  return [];
+function mockLeadData(endpoint: string): Lead[] | LeadStats {
+  const sources = ['Website', 'Referral', 'LinkedIn', 'Email Campaign', 'Trade Show'];
+  const statuses = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation'];
+  const assignees = ['John Smith', 'Sarah Wilson', 'Mike Johnson', 'Emily Brown', 'David Clark'];
+
+  if (endpoint.includes('/stats')) {
+    return {
+      totalLeads: Math.floor(Math.random() * 200) + 100,
+      newLeads: Math.floor(Math.random() * 50) + 20,
+      qualifiedLeads: Math.floor(Math.random() * 30) + 10,
+      conversionRate: Math.floor(Math.random() * 40) + 20,
+      leadsBySource: sources.map(source => ({
+        source,
+        count: Math.floor(Math.random() * 50) + 10
+      })),
+      leadsByStatus: statuses.map(status => ({
+        status,
+        count: Math.floor(Math.random() * 40) + 5
+      })),
+      leadTrend: Array(7).fill(null).map((_, i) => ({
+        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        count: Math.floor(Math.random() * 20) + 5
+      }))
+    };
+  }
+
+  // Generate list of leads
+  return Array(20).fill(null).map((_, i) => ({
+    id: `lead-${String(i + 1).padStart(5, '0')}`,
+    name: `Contact ${i + 1}`,
+    company: `Company ${Math.floor(Math.random() * 100) + 1}`,
+    email: `contact${i + 1}@company${Math.floor(Math.random() * 100) + 1}.com`,
+    phone: `+1-${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+    createdAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+    status: statuses[Math.floor(Math.random() * statuses.length)],
+    source: sources[Math.floor(Math.random() * sources.length)],
+    score: Math.floor(Math.random() * 100),
+    assignedTo: assignees[Math.floor(Math.random() * assignees.length)],
+    lastContact: Math.random() > 0.3 ? new Date(Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000).toISOString() : null,
+    notes: `Sample lead notes for Contact ${i + 1}. Interested in our products/services.`
+  }));
 }
 
 function mockTicketData(endpoint: string): any {
@@ -659,7 +715,7 @@ export interface LeadStats {
   conversionRate: number;
   leadsBySource: { source: string; count: number }[];
   leadsByStatus: { status: string; count: number }[];
-  leadTrend: { date: string; leads: number }[];
+  leadTrend: { date: string; count: number }[];
 }
 
 export type DashboardDataReturn = ReturnType<typeof mockDashboardData>;
