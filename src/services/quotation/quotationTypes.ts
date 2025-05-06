@@ -23,10 +23,10 @@ export interface Quotation {
   taxes: Tax[];
   total: number;
   status: 'draft' | 'sent' | 'accepted' | 'rejected';
-  validUntil: Date;
+  validUntil: string;
   metadata: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateQuotationDTO {
@@ -34,7 +34,7 @@ export interface CreateQuotationDTO {
   accountId: string;
   items: Omit<QuotationItem, 'id'>[];
   taxes?: Omit<Tax, 'amount'>[];
-  validUntil: Date;
+  validUntil: string;
   metadata?: Record<string, any>;
 }
 
@@ -42,6 +42,6 @@ export interface UpdateQuotationDTO {
   items?: Omit<QuotationItem, 'id'>[];
   taxes?: Omit<Tax, 'amount'>[];
   status?: Quotation['status'];
-  validUntil?: Date;
+  validUntil?: string;
   metadata?: Record<string, any>;
 }

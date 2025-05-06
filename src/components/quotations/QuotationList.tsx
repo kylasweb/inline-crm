@@ -58,7 +58,7 @@ export function QuotationList({
               <TableCell>{quotation.opportunityId}</TableCell>
               <TableCell>${quotation.total.toFixed(2)}</TableCell>
               <TableCell>
-                {new Date(quotation.validUntil).toLocaleDateString()}
+                {quotation.validUntil ? new Date(quotation.validUntil).toLocaleDateString() : 'N/A'}
               </TableCell>
               <TableCell>
                 <Badge className={statusColors[quotation.status]}>

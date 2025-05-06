@@ -113,7 +113,7 @@ interface Quotation {
   }[];
   total: number;
   status: 'draft' | 'sent' | 'accepted' | 'rejected';
-  validUntil: Date;
+  validUntil: string;
   metadata: Record<string, any>;
   createdAt: string;
   updatedAt: string;
@@ -599,6 +599,8 @@ function mockSingleQuotation(id: string): Quotation {
   const statuses: Quotation['status'][] = ['draft', 'sent', 'accepted', 'rejected'];
   const createdDate = new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000));
   const validUntil = new Date(createdDate.getTime() + Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
+  const createdAtISO = createdDate.toISOString();
+  const validUntilISO = validUntil.toISOString();
 
   const items = products
     .sort(() => Math.random() - 0.5)
@@ -634,9 +636,9 @@ function mockSingleQuotation(id: string): Quotation {
     taxes,
     total,
     status: statuses[Math.floor(Math.random() * statuses.length)],
-    validUntil,
+    validUntil: validUntilISO,
     metadata: {},
-    createdAt: createdDate.toISOString(),
+    createdAt: createdAtISO,
     updatedAt: new Date().toISOString()
   };
 }

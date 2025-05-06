@@ -26,7 +26,9 @@ const quotationSchema = z.object({
     name: z.string().min(1, 'Tax name is required'),
     rate: z.number().min(0).max(100),
   })).optional(),
-  validUntil: z.date().min(new Date(), 'Valid until date must be in the future'),
+  validUntil: z.string()
+    .refine((date) => new Date(date) > new Date(), 'Valid until date must be in the future')
+    .transform((date) => new Date(date).toISOString()),
 });
 
 interface QuotationFormProps {

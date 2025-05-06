@@ -21,7 +21,14 @@ export function Quotations() {
     queryFn: async () => {
       const response = await quotationService.getAll();
       if (response.success && response.data) {
-        return response.data;
+        // Transform dates to ISO strings
+        const transformedData = response.data.map(quotation => ({
+          ...quotation,
+          validUntil: new Date(quotation.validUntil).toISOString(),
+          createdAt: new Date(quotation.createdAt).toISOString(),
+          updatedAt: new Date(quotation.updatedAt).toISOString()
+        }));
+        return transformedData;
       }
       throw new Error(response.error || 'Failed to fetch quotations');
     }
