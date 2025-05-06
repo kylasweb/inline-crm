@@ -35,7 +35,7 @@ const opportunitySchema = z.object({
     recurringValue: z.number().optional(),
     recurringPeriod: z.enum(['monthly', 'yearly']).optional(),
   }),
-  expectedCloseDate: z.date(),
+  expectedCloseDate: z.string(),
   products: z.array(z.object({
     productId: z.string(),
     name: z.string(),
@@ -70,7 +70,7 @@ const OpportunityForm: React.FC<OpportunityFormProps> = ({
       source: initialData?.source || { type: 'direct' },
       accountId: initialData?.accountId || '',
       value: initialData?.value || { amount: 0, currency: 'USD' },
-      expectedCloseDate: initialData?.expectedCloseDate ? new Date(initialData.expectedCloseDate) : new Date(),
+      expectedCloseDate: initialData?.expectedCloseDate || new Date().toISOString(),
       products: initialData?.products || [],
       assignedTo: initialData?.assignedTo || '',
       priority: initialData?.priority || 'medium',
@@ -200,7 +200,7 @@ const OpportunityForm: React.FC<OpportunityFormProps> = ({
               <FormLabel>Expected Close Date</FormLabel>
               <FormControl>
                 <DatePicker
-                  date={new Date(field.value)}
+                  date={field.value ? new Date(field.value) : new Date()}
                   setDate={(date) => field.onChange(date?.toISOString() || new Date().toISOString())}
                 />
               </FormControl>

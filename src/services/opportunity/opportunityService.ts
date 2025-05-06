@@ -20,8 +20,8 @@ export const opportunityService = {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined) {
           if (key === 'dateRange') {
-            queryParams.append('startDate', value.start.toISOString());
-            queryParams.append('endDate', value.end.toISOString());
+            queryParams.append('startDate', value.start);
+            queryParams.append('endDate', value.end);
           } else {
             queryParams.append(key, value.toString());
           }
@@ -79,7 +79,7 @@ export const opportunityService = {
         amount: 0, // This would need to be set during conversion
         currency: 'USD' // Default currency, should be configurable
       },
-      expectedCloseDate: new Date(new Date().setMonth(new Date().getMonth() + 3)), // Default to 3 months
+      expectedCloseDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // Default to 3 months
       assignedTo: lead.assignedTo || '',
       priority: 'medium'
     };
@@ -112,7 +112,7 @@ export const opportunityService = {
   async markAsLost(id: string, reason: string): Promise<ApiResponse<Opportunity>> {
     return this.update(id, {
       status: 'lost',
-      actualCloseDate: new Date(),
+      actualCloseDate: new Date().toISOString(),
       metadata: {
         lossReason: reason
       }
@@ -131,8 +131,8 @@ export const opportunityService = {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined) {
           if (key === 'dateRange') {
-            queryParams.append('startDate', value.start.toISOString());
-            queryParams.append('endDate', value.end.toISOString());
+            queryParams.append('startDate', value.start);
+            queryParams.append('endDate', value.end);
           } else {
             queryParams.append(key, value.toString());
           }

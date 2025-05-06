@@ -71,8 +71,8 @@ const OpportunityManagement: React.FC<OpportunityManagementProps> = ({ filter, a
     queryKey: ['opportunities', dateRange, searchQuery, stage, status, filter, activeTab],
     queryFn: () => fetchOpportunities({
       dateRange: {
-        start: dateRange.from!,
-        end: dateRange.to!
+        start: dateRange.from?.toISOString() || '',
+        end: dateRange.to?.toISOString() || ''
       },
       stage: stage !== 'All Stages' ? stage : undefined,
       status: status !== 'All Statuses' ? status : undefined

@@ -154,7 +154,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
       ...newOpportunity,
       id: `OPP-${Math.floor(Math.random() * 100000)}`,
       createdAt: new Date().toISOString(),
-      closeDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString()
+      closeDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     });
   };
 
@@ -176,9 +176,9 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
       return sortOrder === 'asc' ? stageIndexA - stageIndexB : stageIndexB - stageIndexA;
     } else {
       // Default: sort by createdAt
-      return sortOrder === 'asc' 
-        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return sortOrder === 'asc'
+        ? a.createdAt.localeCompare(b.createdAt)
+        : b.createdAt.localeCompare(a.createdAt);
     }
   });
 
@@ -414,7 +414,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
                           <span>{opp.probability}%</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4">{new Date(opp.closeDate).toLocaleDateString()}</td>
+                      <td className="py-3 px-4">{new Date(opp.closeDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                       <td className="py-3 px-4 text-right space-x-1">
                         <TooltipProvider>
                           <Tooltip>
@@ -463,7 +463,7 @@ const Opportunities: React.FC<OpportunitiesProps> = ({ initialTab }) => {
                         <div className="flex justify-between items-center">
                           <div className="text-xs">
                             <span className="text-neo-text-secondary">Close: </span>
-                            <span>{new Date(opp.closeDate).toLocaleDateString()}</span>
+                            <span>{new Date(opp.closeDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                           </div>
                           <Badge variant="outline">{opp.probability}%</Badge>
                         </div>

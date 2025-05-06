@@ -46,15 +46,15 @@ export interface Opportunity {
     recurringPeriod?: 'monthly' | 'yearly';
   };
   probability: number;
-  expectedCloseDate: Date;
-  actualCloseDate?: Date;
+  expectedCloseDate: string;
+  actualCloseDate?: string;
   products: OpportunityProduct[];
   assignedTo: string;
   status: OpportunityStatus;
   priority: 'low' | 'medium' | 'high';
   metadata: Record<string, any>;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateOpportunityDTO extends Record<string, unknown> {
@@ -71,7 +71,7 @@ export interface CreateOpportunityDTO extends Record<string, unknown> {
     recurringValue?: number;
     recurringPeriod?: 'monthly' | 'yearly';
   };
-  expectedCloseDate: Date;
+  expectedCloseDate: string;
   products?: OpportunityProduct[];
   assignedTo: string;
   priority: 'low' | 'medium' | 'high';
@@ -81,12 +81,12 @@ export interface CreateOpportunityDTO extends Record<string, unknown> {
 export interface UpdateOpportunityDTO extends Partial<CreateOpportunityDTO>, Record<string, unknown> {
   stage?: OpportunityStage;
   status?: OpportunityStatus;
-  actualCloseDate?: Date;
+  actualCloseDate?: string;
 }
 
 export interface CloseOpportunityDTO extends Record<string, unknown> {
   status: 'won' | 'lost';
-  actualCloseDate: Date;
+  actualCloseDate: string;
   reason?: string;
   finalValue?: {
     amount: number;
@@ -99,8 +99,8 @@ export interface OpportunityFilters {
   status?: OpportunityStatus;
   assignedTo?: string;
   dateRange?: {
-    start: Date;
-    end: Date;
+    start: string;
+    end: string;
   };
   minValue?: number;
   maxValue?: number;
@@ -131,7 +131,7 @@ export interface OpportunityForecast {
     id: string;
     value: number;
     probability: number;
-    expectedCloseDate: Date;
+    expectedCloseDate: string;
   }>;
 }
 
