@@ -1,12 +1,13 @@
 import { StateCreator } from 'zustand';
 import { createPersistStore } from './config';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
   role: 'admin' | 'manager' | 'user';
   permissions: string[];
+  avatar?: string;
 }
 
 interface AuthState {
@@ -44,6 +45,7 @@ const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
         name: 'Test User',
         role: 'user',
         permissions: ['read:leads', 'write:leads'],
+        avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=test-user'
       };
       const mockToken = 'mock-jwt-token';
       

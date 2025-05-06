@@ -4,10 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
+import Documentation from "./pages/Documentation";
 import Dashboard from "./pages/Dashboard";
 import LeadManagement from "./pages/LeadManagement";
 import OpportunityManagement from "./pages/OpportunityManagement";
 import AccountManagement from "./pages/AccountManagement";
+import AssignmentManagement from "./pages/AssignmentManagement";
 import Tickets from "./pages/Tickets";
 import Quotations from "./pages/Quotations";
 import NotFound from "./pages/NotFound";
@@ -56,9 +58,10 @@ const App = () => (
             <Route path="/accounts/list" element={<Layout><AccountManagement activeTab="list" /></Layout>} />
             <Route path="/accounts/analytics" element={<Layout><AccountManagement activeTab="analytics" /></Layout>} />
             <Route path="/quotations" element={<Layout><Quotations /></Layout>} />
+            <Route path="/assignment" element={<Layout><AssignmentManagement /></Layout>} />
             <Route path="/amc/*" element={<Layout><ComingSoon name="AMC & Licensing" /></Layout>} />
             <Route path="/presales/*" element={<Layout><ComingSoon name="Presales Management" /></Layout>} />
-            <Route path="/documents/*" element={<Layout><ComingSoon name="Documentation Repository" /></Layout>} />
+            <Route path="/documents" element={<Layout><Documentation /></Layout>} />
             <Route path="/assets/*" element={<Layout><ComingSoon name="Asset Lifecycle" /></Layout>} />
             <Route path="/vendors/*" element={<Layout><ComingSoon name="Vendor & Partner Management" /></Layout>} />
             <Route path="/feedback/*" element={<Layout><ComingSoon name="Feedback & Survey System" /></Layout>} />
