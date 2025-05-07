@@ -3,6 +3,8 @@
  * @description Implements unit tests for integrationUtils.ts.
  */
 
+import '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { validateData, transformData, communicateWithAPI, handleAPIError, generateReport } from './integrationUtils';
 
 describe('Integration Utils', () => {

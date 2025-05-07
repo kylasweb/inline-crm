@@ -3,6 +3,8 @@
  * @description Implements unit tests for integrationTypes.ts.
  */
 
+import '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { ERPIntegration, HRMSIntegration, ITSMIntegration, DataMapping, SyncSchedule, Log } from './integrationTypes';
 
 describe('Integration Types', () => {

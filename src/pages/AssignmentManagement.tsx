@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 
 import { AssignmentRuleList } from '@/components/assignment/AssignmentRuleList';
-import { AssignmentRuleForm } from '@/components/assignment/AssignmentRuleForm';
+import AssignmentRuleForm from '@/components/assignment/AssignmentRuleForm';
 import { AssignmentStats } from '@/components/assignment/AssignmentStats';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 

@@ -18,7 +18,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 import { assignmentService } from '@/services/assignment/assignmentService';
 import { AssignmentRule } from '@/services/assignment/assignmentTypes';
-import { AssignmentRuleForm } from './AssignmentRuleForm';
+import AssignmentRuleForm from './AssignmentRuleForm';
 
 export function AssignmentRuleList() {
   const { rules, isLoading, fetchRules, toggleRuleStatus } = useAssignmentStore();

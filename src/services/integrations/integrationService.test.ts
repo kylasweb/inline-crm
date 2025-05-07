@@ -3,6 +3,8 @@
  * @description Implements unit tests for integrationService.ts.
  */
 
+import '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import IntegrationService from './integrationService';
 import { ERPIntegration, HRMSIntegration, ITSMIntegration, DataMapping } from './integrationTypes';
 
